@@ -79,3 +79,13 @@ All of those are upgrade issues that will be filed against this repo and built B
 - `gh` CLI must be authenticated for the target repo
 - Each pipeline invocation creates a fresh git worktree under `runs/{run_id}/worktree/`
 - Subprocess wall-clock timeout on every `claude --print` call (default 10 min)
+
+## Co-authorship
+
+Every commit and PR body produced by the pipeline ends with a git trailer attributing the change to the pipeline:
+
+```
+Co-Authored-By: claude-pipeline <noreply@anthropic.com>
+```
+
+This makes machine-generated changes auditable at a glance from `git log` and the GitHub PR view.

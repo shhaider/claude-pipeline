@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `pr_node` now appends a `Co-Authored-By: claude-pipeline <noreply@anthropic.com>` git trailer to every commit message and PR body, separated from the body by a blank line per the git trailers convention. Makes machine-generated changes auditable from `git log` and the GitHub PR view.
+
 ## [0.1.0] - 2026-05-21
 
 ### Added
