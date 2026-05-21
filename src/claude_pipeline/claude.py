@@ -117,6 +117,7 @@ def run_claude(
     add_dirs: list[Path | str] | None = None,
     permission_mode: str = "bypassPermissions",
     model: str | None = None,
+    resume_session_id: str | None = None,
 ) -> ClaudeResult:
     """Run `claude --print` with structured JSON output, return parsed result.
 
@@ -129,19 +130,36 @@ def run_claude(
         permission_mode: 'default' | 'acceptEdits' | 'plan' | 'bypassPermissions'.
             The pipeline trusts its own prompts so we default to bypass.
         model: Override model name. None = CLI default.
+        resume_session_id: If set, the CLI is invoked with `--resume <id>`,
+            continuing a prior session. The new prompt is appended to that
+            session's history so the model retains all prior tool use,
+            file reads, and assistant turns. The session_id of the result
+            in this case is the SAME id (sessions are stable across resumes).
 
     Raises:
         ClaudeError on timeout, non-zero exit, or malformed envelope.
     """
+    # Build resume flag into extra_args
+    resume_extra: list[str] = []
+    if resume_session_id:
+        resume_extra = ["--resume", str(resume_session_id)]
+    merged_extra = resume_extra + (list(extra_args) if extra_args else [])
+
     args = _build_args(
         output_format="json",
         permission_mode=permission_mode,
         model=model,
         add_dirs=add_dirs,
-        extra_args=extra_args,
+        extra_args=merged_extra,
     )
     cwd_path = Path(cwd) if cwd else Path.cwd()
-    log.info("claude.run cwd=%s timeout=%ds prompt_len=%d", cwd_path, timeout_s, len(prompt))
+    log.info(
+        "claude.run cwd=%s timeout=%ds prompt_len=%d resume=%s",
+        cwd_path,
+        timeout_s,
+        len(prompt),
+        resume_session_id or "(fresh)",
+    )
 
     start = time.monotonic()
     try:

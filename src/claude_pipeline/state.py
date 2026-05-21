@@ -91,6 +91,58 @@ class VerifyReport(TypedDict, total=False):
     suggested_fix: str
 
 
+class PackReviewerVerdict(TypedDict, total=False):
+    """Output of pack_reviewer (12_pack_reviewer.md)."""
+
+    must_fix: list[str]
+    should_fix: list[str]
+    notes: list[str]
+    passed: bool
+    hindsight: str  # one sentence + classification
+    verification: str
+
+
+class ReasoningConcern(TypedDict, total=False):
+    category: str
+    severity: str
+    description: str
+    fix: str
+
+
+class ReasoningReviewerVerdict(TypedDict, total=False):
+    """Output of software_reasoning_reviewer (34_software_reasoning_reviewer.md)."""
+
+    reasoning_verdict: str  # PASS | CONCERN | FAIL
+    overall_assessment: str
+    concerns: list[ReasoningConcern]
+    blocking_concerns: list[str]
+
+
+class GovernanceFinding(TypedDict, total=False):
+    criterion: str
+    result: str
+    note: str
+
+
+class GovernanceVerdict(TypedDict, total=False):
+    """Output of executive_governance_reviewer (08_*) (possibly per repair round)."""
+
+    governance_verdict: str  # PASS | FAIL | NEEDS_REVISION
+    overall_assessment: str
+    findings: list[GovernanceFinding]
+    blocking_issues: list[str]
+    repair_round: int  # 0 = initial; 1..N = after repair
+
+
+class GatekeeperVerdict(TypedDict, total=False):
+    """Output of release_gatekeeper (19_release_gatekeeper.md)."""
+
+    decision: str  # PASS | FAIL | BLOCKED
+    rationale: str
+    unresolved_items: list[str]
+    verification: str
+
+
 class PipelineState(TypedDict, total=False):
     """End-to-end pipeline state. Persisted to SQLite checkpoint after
     each node. Resume reloads this dict and continues from the next node.
@@ -120,7 +172,17 @@ class PipelineState(TypedDict, total=False):
 
     current_stage_idx: int  # which stage is being implemented right now
     code_summary: str  # what was changed, one paragraph
+    code_session_id: str  # Claude Code session id shared across stages (resume)
+    code_diff: str  # `git diff` against base_branch after coding finished
     verify: VerifyReport
+
+    # v0.3 review ladder
+    pack_review: PackReviewerVerdict
+    reasoning_review: ReasoningReviewerVerdict
+    governance_review: GovernanceVerdict
+    governance_repair_rounds: int  # how many repair rounds executed
+    governance_repair_log: list[dict[str, Any]]  # audit trail per round
+    gatekeeper: GatekeeperVerdict
 
     # Terminal
     pr_url: str

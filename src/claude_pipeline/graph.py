@@ -1,22 +1,44 @@
-"""LangGraph wiring for the pipeline (v0.2).
+"""LangGraph wiring for the pipeline (v0.3).
 
 Topology:
 
-    intake -> research -> contract -> plan
-                                       |
-                                       v
-                            prompt_expand (parallel per stage)
-                                       |
-                                       v
-                                     code (one stage per call)
-                                       |
-                  (more stages? -> code; else -> verify)
-                                       |
-                                       v
-                                    verify
-                                       |
-                  (pass? -> pr; fail+retries? -> retry_code -> code;
-                   fail+no-retries? -> pr)
+    intake -> research -> contract -> plan -> prompt_expand
+                                                 |
+                                                 v
+                                       code (shared session across stages)
+                                                 |
+                                       (more stages? -> code; else -> verify)
+                                                 |
+                                                 v
+                                              verify (tests only)
+                                                 |
+                                                 v
+                                       pack_reviewer (fresh)
+                                                 |
+                                                 v
+                                     reasoning_reviewer (fresh)
+                                                 |
+                                                 v
+                                    governance_reviewer (fresh)
+                                                 |
+                                       (PASS -> release_gatekeeper;
+                                        NEEDS_REVISION/FAIL -> governance_repair
+                                                        -> release_gatekeeper)
+                                                 |
+                                                 v
+                                          release_gatekeeper
+                                                 |
+                                       (PASS -> pr; FAIL/BLOCKED -> error_exit)
+                                                 |
+                                                 v
+                                                pr / error_exit
+
+v0.3 changes vs v0.2:
+  - code_node uses a shared Claude session across stages (resume).
+  - Verify node only runs tests; acceptance is judged by reviewers.
+  - 4-role review ladder replaces the single verify-judges-everything node.
+  - governance_repair_loop with max 2 rounds.
+  - retry_code edge removed (governance_repair owns repair).
 
 Persists state to SQLite after every node so crashes can resume.
 """
@@ -32,12 +54,17 @@ from langgraph.graph import END, START, StateGraph
 
 from claude_pipeline.nodes.code import code_node
 from claude_pipeline.nodes.contract import contract_node
+from claude_pipeline.nodes.governance_repair import governance_repair_node
+from claude_pipeline.nodes.governance_reviewer import governance_reviewer_node
 from claude_pipeline.nodes.intake import intake_node
+from claude_pipeline.nodes.pack_reviewer import pack_reviewer_node
 from claude_pipeline.nodes.plan import plan_node
 from claude_pipeline.nodes.pr import pr_node
 from claude_pipeline.nodes.prompt_expand import prompt_expand_node
+from claude_pipeline.nodes.reasoning_reviewer import reasoning_reviewer_node
+from claude_pipeline.nodes.release_gatekeeper import release_gatekeeper_node
 from claude_pipeline.nodes.research import research_node
-from claude_pipeline.nodes.verify import MAX_RETRIES, should_retry, verify_node
+from claude_pipeline.nodes.verify import verify_node
 from claude_pipeline.state import PipelineState
 
 log = logging.getLogger(__name__)
@@ -53,18 +80,40 @@ def _has_more_stages(state: PipelineState) -> str:
     return "verify"
 
 
-def _retry_with_guidance(state: PipelineState) -> dict:
-    """Internal node that re-points current_stage_idx back to the last
-    stage when verify says FAIL, so code_node re-runs that stage with
-    the verify guidance in the prompt context.
+def _governance_route(state: PipelineState) -> str:
+    """After governance_reviewer: PASS -> gatekeeper; else -> repair."""
+    gov = state.get("governance_review", {})
+    verdict = str(gov.get("governance_verdict", "")).upper()
+    if verdict == "PASS":
+        return "release_gatekeeper"
+    return "governance_repair"
 
-    For MVP we re-run only the final stage and bump retry_count. A
-    smarter v0.3 would inspect which stage's files broke things.
-    """
-    log.info("retry_code: bumping retry_count and re-running last stage")
+
+def _gatekeeper_route(state: PipelineState) -> str:
+    """After release_gatekeeper: PASS -> pr; FAIL/BLOCKED -> error_exit."""
+    gk = state.get("gatekeeper", {})
+    decision = str(gk.get("decision", "")).upper()
+    if decision == "PASS":
+        return "pr"
+    return "error_exit"
+
+
+def _error_exit(state: PipelineState) -> dict:
+    """Terminal node when gatekeeper says FAIL/BLOCKED. No PR is created;
+    the caller inspects state to decide next steps. v0.4 will add
+    human-in-the-loop here."""
+    gk = state.get("gatekeeper", {})
+    decision = str(gk.get("decision", "?"))
+    unresolved = gk.get("unresolved_items", []) or []
+    rationale = gk.get("rationale", "")
+    log.warning(
+        "error_exit: gatekeeper decision=%s unresolved=%s rationale=%s",
+        decision,
+        unresolved,
+        rationale[:200],
+    )
     return {
-        "current_stage_idx": max(0, len(state.get("plan", [])) - 1),
-        "retry_count": state.get("retry_count", 0) + 1,
+        "error": f"release_gatekeeper {decision}: {rationale[:200]}",
     }
 
 
@@ -76,8 +125,13 @@ def _add_nodes(g: StateGraph) -> None:
     g.add_node("prompt_expand", prompt_expand_node)
     g.add_node("code", code_node)
     g.add_node("verify", verify_node)
-    g.add_node("retry_code", _retry_with_guidance)
+    g.add_node("pack_reviewer", pack_reviewer_node)
+    g.add_node("reasoning_reviewer", reasoning_reviewer_node)
+    g.add_node("governance_reviewer", governance_reviewer_node)
+    g.add_node("governance_repair", governance_repair_node)
+    g.add_node("release_gatekeeper", release_gatekeeper_node)
     g.add_node("pr", pr_node)
+    g.add_node("error_exit", _error_exit)
 
 
 def _add_edges(g: StateGraph) -> None:
@@ -92,13 +146,25 @@ def _add_edges(g: StateGraph) -> None:
         _has_more_stages,
         {"code": "code", "verify": "verify"},
     )
+    g.add_edge("verify", "pack_reviewer")
+    g.add_edge("pack_reviewer", "reasoning_reviewer")
+    g.add_edge("reasoning_reviewer", "governance_reviewer")
     g.add_conditional_edges(
-        "verify",
-        should_retry,
-        {"pr": "pr", "retry_code": "retry_code"},
+        "governance_reviewer",
+        _governance_route,
+        {
+            "release_gatekeeper": "release_gatekeeper",
+            "governance_repair": "governance_repair",
+        },
     )
-    g.add_edge("retry_code", "code")
+    g.add_edge("governance_repair", "release_gatekeeper")
+    g.add_conditional_edges(
+        "release_gatekeeper",
+        _gatekeeper_route,
+        {"pr": "pr", "error_exit": "error_exit"},
+    )
     g.add_edge("pr", END)
+    g.add_edge("error_exit", END)
 
 
 def build_graph(checkpoint_db: Path | str):

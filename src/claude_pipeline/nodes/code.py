@@ -114,27 +114,45 @@ def code_node(state: PipelineState) -> dict:
             stage.get("name", ""),
         )
 
+    # v0.3 — shared code session across stages.
+    # On stage 0 we start fresh and capture the session id. On every
+    # subsequent stage we pass --resume <id> so the same Claude session
+    # handles all stages and accumulates context (the missing edge that
+    # made the single-call baseline win the v0.2 A/B test).
+    prior_session_id = state.get("code_session_id") or None
+    resume_id = prior_session_id if idx > 0 else None
+
     try:
         result = run_claude(
             prompt,
             cwd=state["worktree_path"],
             timeout_s=1800,  # 30 min ceiling
             model="sonnet",  # per port spec: code execution uses Tier 2 (Sonnet)
+            resume_session_id=resume_id,
         )
     except ClaudeError as e:
         return {"error": f"code stage {idx + 1}: claude call failed: {e}"}
 
     log.info(
-        "code stage %d done (%.1fs, cost=$%.4f, turns=%d)",
+        "code stage %d done (%.1fs, cost=$%.4f, turns=%d, session=%s, resumed=%s)",
         idx + 1,
         result.duration_s,
         result.cost_usd,
         result.num_turns,
+        (result.session_id or "")[:8],
+        "yes" if resume_id else "no",
     )
 
     summary = result.text.strip()[-2000:] or "(no summary returned)"
-    return {
+    out: dict = {
         "code_summary": summary,
         "current_stage_idx": idx + 1,
         "error": None,
     }
+    # Always carry the session id forward. On stage 0 this is the first
+    # capture; on later stages it should be the same id (resume keeps it
+    # stable), but we write it again defensively in case the CLI ever
+    # rotates.
+    if result.session_id:
+        out["code_session_id"] = result.session_id
+    return out
