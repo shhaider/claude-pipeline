@@ -7,6 +7,10 @@ file_touch_map. Order matters — stages run sequentially.
 
 For MVP: a single Claude call produces all stages. For v0.2+ we'll add
 the 4-Correction iteration loop around this node.
+
+Until the contract+planner split (metabuilder port roadmap item #4),
+this node fills BOTH the contract_writer and pack_planner roles, so
+this is where blocking/advisory gaps from system_gap_analyst inject.
 """
 
 from __future__ import annotations
@@ -26,7 +30,7 @@ INTAKE:
 
 RESEARCH BRIEF:
 {research_brief}
-
+{gap_block}
 ISSUE #{issue_number}: {issue_title}
 
 Produce a JSON array of stages. Each stage is one focused unit of work that an implementer can complete in a single coding session.
@@ -54,13 +58,62 @@ Begin:
 """
 
 
-def plan_node(state: PipelineState) -> dict:
-    prompt = PROMPT_TEMPLATE.format(
+def build_gap_injection_block(gap_analysis: dict | None) -> str:
+    """Format gap_analysis into a prompt block.
+
+    Mirrors metabuilder's contract_writer injection: blocking gaps become
+    MANDATORY ADDITIONAL DELIVERABLES; advisory gaps are listed as
+    suggestions to consider. Returns empty string when no gaps exist so
+    the prompt looks identical to the pre-port version.
+    """
+    if not gap_analysis:
+        return ""
+    blocking = gap_analysis.get("blocking_gaps") or []
+    advisory = gap_analysis.get("advisory_gaps") or []
+    summary = (gap_analysis.get("summary") or "").strip()
+    if not blocking and not advisory and not summary:
+        return ""
+
+    lines: list[str] = ["", "ADVERSARIAL GAP ANALYSIS:"]
+    if summary:
+        lines.append(f"Summary: {summary}")
+
+    if blocking:
+        lines.append("")
+        lines.append("MANDATORY ADDITIONAL DELIVERABLES (each MUST be covered by at least one stage):")
+        for i, gap in enumerate(blocking, start=1):
+            lines.append(
+                f"  {i}. [{gap.get('lens', '?')}] {gap.get('gap', '')} "
+                f"— REQUIRED: {gap.get('recommendation', '')}"
+            )
+
+    if advisory:
+        lines.append("")
+        lines.append("Suggestions to consider (not mandatory):")
+        for i, gap in enumerate(advisory, start=1):
+            lines.append(
+                f"  {i}. [{gap.get('lens', '?')}] {gap.get('gap', '')} "
+                f"— suggest: {gap.get('recommendation', '')}"
+            )
+
+    lines.append("")
+    return "\n".join(lines) + "\n"
+
+
+def build_plan_prompt(state: PipelineState) -> str:
+    """Public packet builder — extracted so tests can verify injection
+    without invoking the LLM."""
+    return PROMPT_TEMPLATE.format(
         intake_json=json.dumps(state.get("intake", {}), indent=2),
         research_brief=state.get("research_brief", "(no research brief)"),
+        gap_block=build_gap_injection_block(state.get("gap_analysis")),
         issue_number=state["issue_number"],
         issue_title=state.get("issue_title", ""),
     )
+
+
+def plan_node(state: PipelineState) -> dict:
+    prompt = build_plan_prompt(state)
     log.info("plan: invoking claude")
     result = run_claude(
         prompt,
