@@ -15,6 +15,26 @@ Designed to **self-bootstrap**: once v0.1 is working, point it at this repo and 
 - `langgraph-checkpoint-sqlite` — SQLite-backed pause/resume
 - `claude` CLI — the LLM harness (no proxy, no custom tool exec, no custom memory)
 
+## Architectural rules (binding on all upgrades)
+
+### Rule 1 — Every step is an LLM judgment by default
+
+Deterministic steps require A/B-test evidence that they outperform an LLM call at the same decision. The default for any new decision point in this pipeline is "spawn an LLM". The burden of proof is on "hardcode this" — usually meaning mechanical string operations (JSON parsing, entropy, file copies) where there is no judgment to make.
+
+Concrete consequences:
+- Retry counts, retry strategies, "which stage to redo" → LLM, not constants.
+- Commit messages, PR bodies, branch names → LLM, not templates.
+- "Which base branch", "what files to stage", "is this a final state" → LLM, with the LLM having read the repo conventions.
+- The only steps that may stay deterministic without A/B justification are pure-mechanical ones (`json.loads`, `secrets.token_hex`, `git add -A` of an already-decided file list).
+
+### Rule 2 — Port from metabuilder, don't reimagine
+
+Where metabuilder has an analog of a node, use metabuilder's prompts, decision logic, and post-processing verbatim. Swap only the LLM transport (local proxy → `claude --print`). Reimaginings need explicit justification (e.g. "this metabuilder path required a system that doesn't exist here"). See `docs/metabuilder-port-spec.md` for the canonical port reference.
+
+### Rule 3 — A/B every escalation
+
+The pipeline only gains complexity when an A/B test shows the new version matches or beats the prior version on the same issue. The first baseline is a single `claude --print` call with the issue body. After that, each version is the baseline for the next.
+
 ## Pipeline phases (MVP)
 
 ```
