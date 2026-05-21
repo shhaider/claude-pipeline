@@ -153,6 +153,54 @@ def test_advisory_gaps_present_but_not_marked_mandatory():
     assert advisory_gap_text in after_header
 
 
+def test_mixed_blocking_and_advisory_are_in_separate_sections():
+    """When BOTH kinds are present, the mandatory section must contain
+    only blocking-gap text and the advisory section must contain only
+    advisory-gap text — they must not bleed into each other.
+
+    This is the regression test that catches the realistic mistake:
+    advisory items accidentally being rendered under the MANDATORY
+    header (e.g., someone refactors and uses the wrong list)."""
+    blocking_text = "Missing env-var precondition check in CI."
+    advisory_text = "Consider naming the log fields with snake_case."
+    state = _base_state()
+    state["gap_analysis"] = {
+        "blocking_gaps": [
+            {
+                "lens": "infrastructure-assumed-but-not-mentioned",
+                "gap": blocking_text,
+                "recommendation": "Add a CI step that asserts CLAUDE_CONFIG_DIR is set.",
+            }
+        ],
+        "advisory_gaps": [
+            {
+                "lens": "architecture-smell",
+                "gap": advisory_text,
+                "recommendation": "Pick a casing convention and document it.",
+            }
+        ],
+        "summary": "One blocking infra gap, one advisory smell.",
+    }
+
+    prompt = build_plan_prompt(state)
+    mandatory_idx = prompt.index("MANDATORY ADDITIONAL DELIVERABLES")
+    advisory_idx = prompt.index("Advisory gaps")
+    assert mandatory_idx < advisory_idx, (
+        "MANDATORY section should appear before the Advisory section"
+    )
+
+    mandatory_section = prompt[mandatory_idx:advisory_idx]
+    advisory_section = prompt[advisory_idx:]
+
+    # Blocking text lives ONLY in the mandatory section.
+    assert blocking_text in mandatory_section
+    assert blocking_text not in advisory_section
+
+    # Advisory text lives ONLY in the advisory section.
+    assert advisory_text in advisory_section
+    assert advisory_text not in mandatory_section
+
+
 def test_empty_gap_analysis_renders_cleanly():
     """Belt-and-braces: when gap_analysis is absent or both lists are
     empty, the planner prompt must render with no orphan headers and
