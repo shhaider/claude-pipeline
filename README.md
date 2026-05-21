@@ -93,6 +93,8 @@ tests/              # pytest suite
 
 All of those are upgrade issues that will be filed against this repo and built BY this pipeline.
 
+Commit messages and PR bodies produced by this pipeline include a `Co-Authored-By: claude-pipeline <noreply@anthropic.com>` trailer so that every co-authored commit is attributable to the pipeline agent.
+
 ## Constraints
 
 - Claude Code CLI auth uses whatever's in `CLAUDE_CONFIG_DIR` (default `~/.claude`)
