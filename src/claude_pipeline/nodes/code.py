@@ -1,34 +1,33 @@
 """Code node: implement one stage from the plan.
 
-This is the heavy node. Claude Code reads its own prompt + research +
-intake, then uses its native tools (Read/Edit/Write/Bash) to modify code
-in the worktree.
+v0.2 change: the code node no longer builds its own prompt. The
+prompt-expansion node has already produced a per-stage markdown prompt
+(in `runs/{run_id}/prompts/P{NN}_{stage}.md`). This node reads that
+prompt and hands it straight to `claude --print` running in the
+worktree. The expansion pass has already encoded all the discipline
+(truth-boundary / fake-completion / scope-boundaries / stop-condition).
 
-The node runs ONE stage per invocation. After the stage completes,
-graph.py advances ``current_stage_idx`` and re-enters this node until
-all stages are done.
+If for some reason the expanded prompt is missing (expansion node
+errored on this stage), we fall back to a minimal inline prompt so the
+pipeline doesn't deadlock — this preserves the "don't break what
+works" constraint.
 """
 
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
-from claude_pipeline.claude import run_claude
+from claude_pipeline.claude import ClaudeError, run_claude
 from claude_pipeline.state import PipelineState
 
 log = logging.getLogger(__name__)
 
-PROMPT_TEMPLATE = """You are implementing one stage of a planned software change. The worktree at your current directory is an isolated checkout. You have Read / Edit / Write / Bash / Glob / Grep tools.
 
-CONTEXT (from earlier pipeline phases):
+# Fallback prompt — only used when the expansion node failed for this stage.
+_FALLBACK_PROMPT_TEMPLATE = """You are implementing one stage of a planned software change. The worktree at your current directory is an isolated checkout. You have Read / Edit / Write / Bash / Glob / Grep tools.
 
-INTAKE:
-- Task type:    {task_type}
-- Tier:         {complexity_tier}
-- Acceptance:   {acceptance_criteria_bullets}
-
-RESEARCH BRIEF (you read the code in this brief; rely on it):
-{research_brief}
+ISSUE: {issue_title}
 
 THE STAGE YOU ARE IMPLEMENTING (stage {stage_idx} of {stage_count}):
 
@@ -36,18 +35,31 @@ Stage name:        {stage_name}
 Description:       {stage_description}
 File touch map:    {stage_files_bullets}
 
+ACCEPTANCE CRITERIA (issue-level — must be satisfied):
+{acceptance_criteria_bullets}
+
 PRIOR STAGES (already implemented, do not redo):
 {prior_stages_bullets}
 
 Rules:
-- Only modify files in the file_touch_map. Reading other files is fine.
-- Match the existing code's conventions (naming, formatting, error handling).
-- If you must touch a file NOT in the touch map, do it but note it clearly at the end.
+- Only modify files in the file touch map. Reading other files is fine.
+- Match the existing code's conventions.
 - DO NOT commit yet. The pipeline's commit node handles that.
-- DO NOT run pytest / npm test unless the description asks you to.
 
-When done, finish with one paragraph summarising what you changed and why. No special markers needed — your final message body is what the pipeline records as the stage summary.
+When done, finish with one paragraph summarising what you changed and why.
 """
+
+
+def _ftm_to_bullets(ftm) -> str:
+    if isinstance(ftm, dict):
+        parts: list[str] = []
+        for label in ("create", "modify"):
+            for p in ftm.get(label, []) or []:
+                parts.append(f"  - {p} ({label})")
+        return "\n".join(parts) or "  (no files declared)"
+    if isinstance(ftm, list):
+        return "\n".join(f"  - {p}" for p in ftm) or "  (no files declared)"
+    return "  (no files declared)"
 
 
 def code_node(state: PipelineState) -> dict:
@@ -58,39 +70,60 @@ def code_node(state: PipelineState) -> dict:
 
     stage = plan[idx]
     intake = state.get("intake", {})
-    prior = plan[:idx]
 
-    prompt = PROMPT_TEMPLATE.format(
-        task_type=intake.get("task_type", "?"),
-        complexity_tier=intake.get("complexity_tier", "?"),
-        acceptance_criteria_bullets="\n".join(
-            f"  - {c}" for c in intake.get("acceptance_criteria", [])
-        ),
-        research_brief=state.get("research_brief", "(none)"),
-        stage_idx=idx + 1,
-        stage_count=len(plan),
-        stage_name=stage.get("name", ""),
-        stage_description=stage.get("description", ""),
-        stage_files_bullets="\n".join(
-            f"  - {f}" for f in stage.get("file_touch_map", [])
+    # Preferred path: read the expanded prompt produced by prompt_expand.
+    expanded = stage.get("expanded_prompt") or ""
+    prompt_path = stage.get("prompt_path") or ""
+    if not expanded and prompt_path:
+        try:
+            expanded = Path(prompt_path).read_text(encoding="utf-8")
+        except OSError as e:
+            log.warning("code: failed to read expanded prompt %s: %s", prompt_path, e)
+
+    if expanded:
+        prompt = expanded
+        log.info(
+            "code: invoking claude on stage %d/%d (%s) — using expanded prompt (%d chars)",
+            idx + 1,
+            len(plan),
+            stage.get("name", ""),
+            len(expanded),
         )
-        or "  (no files declared)",
-        prior_stages_bullets="\n".join(
-            f"  - {s['name']}: {s['description']}" for s in prior
+    else:
+        # Fallback — shouldn't happen if expansion succeeded
+        prior = plan[:idx]
+        prompt = _FALLBACK_PROMPT_TEMPLATE.format(
+            issue_title=state.get("issue_title", "?"),
+            stage_idx=idx + 1,
+            stage_count=len(plan),
+            stage_name=stage.get("name", ""),
+            stage_description=stage.get("purpose") or stage.get("description", ""),
+            stage_files_bullets=_ftm_to_bullets(stage.get("file_touch_map", [])),
+            acceptance_criteria_bullets="\n".join(
+                f"  - {c}" for c in intake.get("acceptance_criteria", [])
+            ),
+            prior_stages_bullets="\n".join(
+                f"  - {s.get('name', '?')}: {s.get('purpose') or s.get('description', '')}"
+                for s in prior
+            )
+            or "  (none — this is the first stage)",
         )
-        or "  (none — this is the first stage)",
-    )
-    log.info(
-        "code: invoking claude on stage %d/%d (%s)",
-        idx + 1,
-        len(plan),
-        stage.get("name", ""),
-    )
-    result = run_claude(
-        prompt,
-        cwd=state["worktree_path"],
-        timeout_s=1800,  # 30 min ceiling for the heavy node
-    )
+        log.warning(
+            "code: no expanded prompt for stage %d (%s) — using fallback",
+            idx + 1,
+            stage.get("name", ""),
+        )
+
+    try:
+        result = run_claude(
+            prompt,
+            cwd=state["worktree_path"],
+            timeout_s=1800,  # 30 min ceiling
+            model="sonnet",  # per port spec: code execution uses Tier 2 (Sonnet)
+        )
+    except ClaudeError as e:
+        return {"error": f"code stage {idx + 1}: claude call failed: {e}"}
+
     log.info(
         "code stage %d done (%.1fs, cost=$%.4f, turns=%d)",
         idx + 1,

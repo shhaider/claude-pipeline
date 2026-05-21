@@ -7,7 +7,7 @@ state via the default channel behaviour (last-write-wins per key).
 
 from __future__ import annotations
 
-from typing import TypedDict
+from typing import Any, TypedDict
 
 
 class IntakeDecisions(TypedDict, total=False):
@@ -23,14 +23,65 @@ class IntakeDecisions(TypedDict, total=False):
     wiring_plan: str
 
 
+class ContractDeliverable(TypedDict, total=False):
+    """One item from contract_writer's output."""
+
+    id: str  # D1, D2, ...
+    name: str
+    description: str
+    success_criteria: list[str]
+    source_goal: str
+
+
+class Contract(TypedDict, total=False):
+    """contract_writer's full output (port of metabuilder's contract shape)."""
+
+    contract_title: str
+    deliverables: list[ContractDeliverable]
+    ambiguity_flags: list[dict[str, str]]
+    total_deliverables: int
+    verification: dict[str, Any]
+
+
 class Stage(TypedDict, total=False):
     """One unit of work in the plan. Implementer consumes one Stage per
-    `claude --print` invocation."""
+    `claude --print` invocation.
+
+    Two shapes supported:
+      - v0.1 MVP (flat): {name, description, file_touch_map: [paths]}
+      - v0.2 pack_planner (metabuilder): {stage_id, name, purpose, role,
+        file_touch_map: {create, modify, do_not_touch}, acceptance_criteria,
+        depends_on, backward_compat_notes}
+
+    The current_stage_idx machinery in graph.py treats them uniformly —
+    it only cares about ordering and length.
+    """
 
     name: str
     description: str
-    file_touch_map: list[str]  # files this stage is allowed to touch
-    prompt_path: str  # filled in by prompt-expansion node
+    file_touch_map: Any  # list[str] (v0.1) or {create, modify, do_not_touch} (v0.2)
+    # v0.2 fields
+    stage_id: str
+    purpose: str
+    role: str
+    acceptance_criteria: list[dict[str, str]]
+    depends_on: list[str]
+    backward_compat_notes: str
+    # filled in by prompt-expansion node
+    prompt_path: str
+    expanded_prompt: str
+
+
+class Plan(TypedDict, total=False):
+    """pack_planner's full output."""
+
+    plan_title: str
+    stages: list[Stage]
+    recommended_first_stage: str
+    estimated_risk: str
+    risk_rationale: str
+    assumption_audit: dict[str, Any]
+    verification: dict[str, Any]
 
 
 class VerifyReport(TypedDict, total=False):
@@ -58,7 +109,15 @@ class PipelineState(TypedDict, total=False):
     issue_body: str
     intake: IntakeDecisions
     research_brief: str  # markdown — research-node output
-    plan: list[Stage]  # ordered stages from plan node
+    research_packet: dict[str, Any]  # parsed JSON if research returns structured form
+    excerpts: str  # gathered codebase excerpts (from excerpts.py)
+
+    contract: Contract  # contract_writer output
+    plan_meta: Plan  # full pack_planner output (with risk/assumption_audit)
+    plan: list[Stage]  # ordered stages — flat list for graph iteration
+
+    plan_correction_attempted: bool  # set by completeness gate
+
     current_stage_idx: int  # which stage is being implemented right now
     code_summary: str  # what was changed, one paragraph
     verify: VerifyReport
