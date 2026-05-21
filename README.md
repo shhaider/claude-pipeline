@@ -38,12 +38,16 @@ The pipeline only gains complexity when an A/B test shows the new version matche
 ## Pipeline phases (MVP)
 
 ```
-gh issue → INTAKE → RESEARCH → PLAN → CODE → VERIFY → PR
-              ↑                            │
-              └───── (verify fail loops back, max 2 retries) ──┘
+gh issue → INTAKE → RESEARCH → SYSTEM_GAP_ANALYST → PLAN → CODE → VERIFY → PR
+              ↑                                                       │
+              └────────── (verify fail loops back, max 2 retries) ────┘
 ```
 
 Each phase is a LangGraph node. Each node shells out to `claude --print` with a focused prompt and a slice of pipeline state. State persists to a SQLite checkpoint after every node — pipelines that crash mid-flight can be resumed.
+
+### Adversarial gap pass
+
+`system_gap_analyst` is the institutionalized CTO seat (port of metabuilder's role of the same name). It runs after research and before planning. It applies 8 named adversarial lenses — infrastructure-assumed-but-not-mentioned, silent-failure, cross-cutting-concerns, next-stage-prerequisites, YAGNI-cut, fake-completion, architecture-smell, and developer-contract-completeness — to surface the unstated dependencies and silent-failure modes that well-scoped issues tend to hide. Its `blocking_gaps` are injected into the plan node's prompt as MANDATORY ADDITIONAL DELIVERABLES; `advisory_gaps` are passed in as suggestions only. The point is to give the planner permission to go beyond the literal request.
 
 ## CLI
 
@@ -70,6 +74,7 @@ src/claude_pipeline/
 ├── nodes/          # one file per phase
 │   ├── intake.py
 │   ├── research.py
+│   ├── system_gap_analyst.py
 │   ├── plan.py
 │   ├── code.py
 │   ├── verify.py
