@@ -27,7 +27,7 @@ INTAKE:
 RESEARCH BRIEF:
 {research_brief}
 
-ISSUE #{issue_number}: {issue_title}
+{mandatory_deliverables_block}{advisory_suggestions_block}ISSUE #{issue_number}: {issue_title}
 
 Produce a JSON array of stages. Each stage is one focused unit of work that an implementer can complete in a single coding session.
 
@@ -54,12 +54,47 @@ Begin:
 """
 
 
+def _render_gap(item) -> str:
+    """Coerce a gap item (str or dict) to a display string."""
+    if isinstance(item, dict):
+        lens = item.get("lens", "?")
+        desc = item.get("description", "")
+        rec = item.get("recommendation", "")
+        return f"[{lens}] {desc}" + (f" — {rec}" if rec else "")
+    return str(item)
+
+
 def plan_node(state: PipelineState) -> dict:
+    # Inject gap_analysis findings when the upstream system_gap_analyst ran.
+    gap = state.get("gap_analysis") or {}
+    blocking_gaps = gap.get("blocking_gaps") or [] if isinstance(gap, dict) else []
+    advisory_gaps = gap.get("advisory_gaps") or [] if isinstance(gap, dict) else []
+
+    if blocking_gaps:
+        mandatory_deliverables_block = (
+            "MANDATORY ADDITIONAL DELIVERABLES (from system_gap_analyst — blocking_gaps):\n"
+            + "\n".join(f"- {_render_gap(g)}" for g in blocking_gaps)
+            + "\n\n"
+        )
+    else:
+        mandatory_deliverables_block = ""
+
+    if advisory_gaps:
+        advisory_suggestions_block = (
+            "ADVISORY SUGGESTIONS (from system_gap_analyst — advisory_gaps, non-mandatory):\n"
+            + "\n".join(f"- {_render_gap(g)}" for g in advisory_gaps)
+            + "\n\n"
+        )
+    else:
+        advisory_suggestions_block = ""
+
     prompt = PROMPT_TEMPLATE.format(
         intake_json=json.dumps(state.get("intake", {}), indent=2),
         research_brief=state.get("research_brief", "(no research brief)"),
         issue_number=state["issue_number"],
         issue_title=state.get("issue_title", ""),
+        mandatory_deliverables_block=mandatory_deliverables_block,
+        advisory_suggestions_block=advisory_suggestions_block,
     )
     log.info("plan: invoking claude")
     result = run_claude(

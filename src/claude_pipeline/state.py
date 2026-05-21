@@ -58,6 +58,7 @@ class PipelineState(TypedDict, total=False):
     issue_body: str
     intake: IntakeDecisions
     research_brief: str  # markdown — research-node output
+    gap_analysis: dict  # system_gap_analyst output {blocking_gaps, advisory_gaps, summary}
     plan: list[Stage]  # ordered stages from plan node
     current_stage_idx: int  # which stage is being implemented right now
     code_summary: str  # what was changed, one paragraph
