@@ -38,10 +38,12 @@ The pipeline only gains complexity when an A/B test shows the new version matche
 ## Pipeline phases (MVP)
 
 ```
-gh issue → INTAKE → RESEARCH → PLAN → CODE → VERIFY → PR
-              ↑                            │
-              └───── (verify fail loops back, max 2 retries) ──┘
+gh issue → INTAKE → RESEARCH → SYSTEM_GAP_ANALYST → CONTRACT → PLAN → CODE → VERIFY → PR
+                                                                              │
+                       └─ (verify fail loops back to CODE, max 2 retries) ────┘
 ```
+
+The **SYSTEM_GAP_ANALYST** runs an *adversarial* pre-lane between research and contract. It applies eight named lenses to the planning request — `infrastructure-assumed-but-not-mentioned`, `silent-failure`, `cross-cutting-concerns`, `next-stage-prerequisites`, `YAGNI-cut`, `fake-completion`, `architecture-smell`, `developer-contract-completeness` — and emits a structured `{blocking_gaps, advisory_gaps, summary}` object. The downstream **CONTRACT** node injects each blocking gap as a MANDATORY ADDITIONAL DELIVERABLE (the contract must cover it); advisory gaps appear only as SUGGESTIONS. Catching unstated dependencies and silent-failure modes here is cheaper than catching them after planning — the contract becomes the single locked source of scope for everything downstream.
 
 Each phase is a LangGraph node. Each node shells out to `claude --print` with a focused prompt and a slice of pipeline state. State persists to a SQLite checkpoint after every node — pipelines that crash mid-flight can be resumed.
 
