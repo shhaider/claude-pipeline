@@ -1,7 +1,12 @@
 """LangGraph wiring for the pipeline.
 
-Builds the state machine: intake -> research -> plan -> code -> verify
-   -> (loop back to code if FAIL, max 2 retries) -> pr
+Builds the state machine:
+   intake → research → system_gap_analyst → contract → plan
+        → code → verify → (loop back to code if FAIL, max 2 retries) → pr
+
+The system_gap_analyst is an adversarial pre-lane: it reads the intake +
+research output through 8 named lenses and surfaces gaps the contract
+MUST cover (blocking) or should consider (advisory).
 
 Persists state to SQLite after every node so crashes can resume.
 """
@@ -16,10 +21,12 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 
 from claude_pipeline.nodes.code import code_node
+from claude_pipeline.nodes.contract import contract_node
 from claude_pipeline.nodes.intake import intake_node
 from claude_pipeline.nodes.plan import plan_node
 from claude_pipeline.nodes.pr import pr_node
 from claude_pipeline.nodes.research import research_node
+from claude_pipeline.nodes.system_gap_analyst import system_gap_analyst_node
 from claude_pipeline.nodes.verify import MAX_RETRIES, should_retry, verify_node
 from claude_pipeline.state import PipelineState
 
@@ -51,12 +58,11 @@ def _retry_with_guidance(state: PipelineState) -> dict:
     }
 
 
-def build_graph(checkpoint_db: Path | str):
-    """Compile the graph with a SQLite checkpointer pinned to
-    checkpoint_db. Returns the compiled CompiledGraph."""
-    g = StateGraph(PipelineState)
+def _add_pipeline_nodes(g: StateGraph) -> None:
     g.add_node("intake", intake_node)
     g.add_node("research", research_node)
+    g.add_node("system_gap_analyst", system_gap_analyst_node)
+    g.add_node("contract", contract_node)
     g.add_node("plan", plan_node)
     g.add_node("code", code_node)
     g.add_node("verify", verify_node)
@@ -65,7 +71,9 @@ def build_graph(checkpoint_db: Path | str):
 
     g.add_edge(START, "intake")
     g.add_edge("intake", "research")
-    g.add_edge("research", "plan")
+    g.add_edge("research", "system_gap_analyst")
+    g.add_edge("system_gap_analyst", "contract")
+    g.add_edge("contract", "plan")
     g.add_edge("plan", "code")
     # After code: more stages? loop back to code; else verify.
     g.add_conditional_edges(
@@ -82,6 +90,13 @@ def build_graph(checkpoint_db: Path | str):
     g.add_edge("retry_code", "code")
     g.add_edge("pr", END)
 
+
+def build_graph(checkpoint_db: Path | str):
+    """Compile the graph with a SQLite checkpointer pinned to
+    checkpoint_db. Returns the compiled CompiledGraph."""
+    g = StateGraph(PipelineState)
+    _add_pipeline_nodes(g)
+
     # SqliteSaver wraps a sqlite3 connection. `from_conn_string` is a
     # context manager in current langgraph-checkpoint-sqlite, so we
     # open the connection directly and let it live for the graph's
@@ -96,28 +111,6 @@ def render_mermaid() -> str:
     """Render the graph as a Mermaid diagram (for docs / debugging).
     Uses an in-memory uncompiled graph so this works without a DB."""
     g = StateGraph(PipelineState)
-    g.add_node("intake", intake_node)
-    g.add_node("research", research_node)
-    g.add_node("plan", plan_node)
-    g.add_node("code", code_node)
-    g.add_node("verify", verify_node)
-    g.add_node("retry_code", _retry_with_guidance)
-    g.add_node("pr", pr_node)
-    g.add_edge(START, "intake")
-    g.add_edge("intake", "research")
-    g.add_edge("research", "plan")
-    g.add_edge("plan", "code")
-    g.add_conditional_edges(
-        "code",
-        _has_more_stages,
-        {"code": "code", "verify": "verify"},
-    )
-    g.add_conditional_edges(
-        "verify",
-        should_retry,
-        {"pr": "pr", "retry_code": "retry_code"},
-    )
-    g.add_edge("retry_code", "code")
-    g.add_edge("pr", END)
+    _add_pipeline_nodes(g)
     compiled = g.compile()
     return compiled.get_graph().draw_mermaid()

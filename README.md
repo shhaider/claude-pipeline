@@ -35,15 +35,24 @@ Where metabuilder has an analog of a node, use metabuilder's prompts, decision l
 
 The pipeline only gains complexity when an A/B test shows the new version matches or beats the prior version on the same issue. The first baseline is a single `claude --print` call with the issue body. After that, each version is the baseline for the next.
 
-## Pipeline phases (MVP)
+## Pipeline phases
 
 ```
-gh issue → INTAKE → RESEARCH → PLAN → CODE → VERIFY → PR
-              ↑                            │
-              └───── (verify fail loops back, max 2 retries) ──┘
+gh issue → INTAKE → RESEARCH → SYSTEM_GAP_ANALYST → CONTRACT → PLAN → CODE → VERIFY → PR
+              ↑                                                                    │
+              └─────────── (verify fail loops back, max 2 retries) ────────────────┘
 ```
 
 Each phase is a LangGraph node. Each node shells out to `claude --print` with a focused prompt and a slice of pipeline state. State persists to a SQLite checkpoint after every node — pipelines that crash mid-flight can be resumed.
+
+### Adversarial pre-lane: `system_gap_analyst`
+
+Between research and contract sits an **adversarial gap-analysis pass** (ported verbatim from metabuilder's `system_gap_analyst`). It re-reads the intake + research output through 8 named lenses — *infrastructure-assumed-but-not-mentioned, silent-failure, cross-cutting-concerns, next-stage-prerequisites, YAGNI-cut, fake-completion, architecture-smell, developer-contract-completeness* — and emits two lists:
+
+- **blocking_gaps** — gaps that the contract MUST cover; each one is injected into the contract_writer's user packet as a MANDATORY ADDITIONAL DELIVERABLE tagged `source_goal: gap_analysis_blocking`.
+- **advisory_gaps** — suggestions the contract should consider but may defer.
+
+Without this pre-lane, gaps in the issue framing (e.g. "we assume there's already a queue here") flow silently into the plan and surface only at code or verify time. With it, every contract starts from a deliberately-stress-tested framing.
 
 ## CLI
 
@@ -70,6 +79,8 @@ src/claude_pipeline/
 ├── nodes/          # one file per phase
 │   ├── intake.py
 │   ├── research.py
+│   ├── system_gap_analyst.py  # adversarial 8-lens pre-lane
+│   ├── contract.py            # contract_writer — injects blocking gaps as deliverables
 │   ├── plan.py
 │   ├── code.py
 │   ├── verify.py
@@ -77,7 +88,8 @@ src/claude_pipeline/
 ├── claude.py       # subprocess wrapper for `claude --print`
 └── cli.py          # entry point
 
-prompts/            # prompt templates per node
+prompts/metabuilder/             # verbatim role prompts ported from metabuilder
+└── 35_system_gap_analyst.md
 runs/               # per-invocation state + checkpoint DB
 tests/              # pytest suite
 ```
