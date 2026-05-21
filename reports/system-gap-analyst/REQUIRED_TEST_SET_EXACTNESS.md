@@ -17,22 +17,18 @@ For each raw test output declared in the package, prove that:
 
 ## Required test set (per task prompt §6)
 
-| # | Required test | Present? | Outcome |
-|---|---|---|---|
-| 1 | test_packet_contains_all_eight_lenses | YES | PASSED |
-| 2 | test_packet_includes_intake_and_research | YES | PASSED |
-| 3 | test_plan_injection_marks_blocking_as_mandatory | YES | PASSED |
-| 4 | test_plan_injection_advisory_not_mandatory | YES | PASSED |
-| 5 (bonus) | test_plan_injection_empty_gap_analysis_renders_empty_string | YES | PASSED |
-| 6 (bonus) | test_packet_omits_anchor_gracefully_when_missing | YES | PASSED |
+1. test_packet_contains_all_eight_lenses — present and PASSED
+2. test_packet_includes_intake_and_research — present and PASSED
+3. test_plan_injection_marks_blocking_as_mandatory — present and PASSED
+4. test_plan_injection_advisory_not_mandatory — present and PASSED
+5. test_plan_injection_empty_gap_analysis_renders_empty_string (bonus) — present and PASSED
+6. test_packet_omits_anchor_gracefully_when_missing (bonus) — present and PASSED
 
 Additional tests added beyond the prompted minimum, all PASSED:
 
-| # | Test | Outcome |
-|---|---|---|
-| 7 | test_canonical_lens_slugs_match_node_constant | PASSED |
-| 8 | test_packet_uses_structured_anchor_when_present | PASSED |
-| 9 | test_plan_injection_both_blocking_and_advisory | PASSED |
+7. test_canonical_lens_slugs_match_node_constant
+8. test_packet_uses_structured_anchor_when_present
+9. test_plan_injection_both_blocking_and_advisory
 
 ---
 

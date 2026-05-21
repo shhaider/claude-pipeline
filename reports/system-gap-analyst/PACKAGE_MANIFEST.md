@@ -55,7 +55,7 @@
 
 ---
 
-### Evidence artifacts
+## Evidence artifacts
 
 | Artifact ID | File | Path in package | Present | Verified |
 |---|---|---|---|---|
@@ -66,14 +66,14 @@
 | E005 | test_system_gap_analyst.py | `tests/test_system_gap_analyst.py` | [x] | [x] |
 | E006 | conftest.py | `conftest.py` | [x] | [x] |
 
-### Implementation artifacts
+## Implementation artifacts
 
 | File | Path in package | Present | Verified |
 |---|---|---|---|
 | Implementation commit | git rev `6fcf87d` on branch `V3-rerun-1779380607` | [x] | [x] |
 | Gate package commit | second commit on the same branch | [x] | [x] |
 
-### Handoff documents
+## Handoff documents
 
 | File | Status field | Expected status | Verified |
 |---|---|---|---|
