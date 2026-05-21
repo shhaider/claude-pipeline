@@ -40,6 +40,16 @@ class VerifyReport(TypedDict, total=False):
     suggested_fix: str
 
 
+class GapAnalysis(TypedDict, total=False):
+    """Output of system_gap_analyst node: adversarial gap analysis with
+    8 named lenses. Blocking gaps become mandatory plan deliverables;
+    advisory gaps become suggestions."""
+
+    blocking_gaps: list[dict]   # each: {lens, gap/description, recommendation}
+    advisory_gaps: list[dict]   # each: {lens, gap/description, recommendation}
+    summary: str
+
+
 class PipelineState(TypedDict, total=False):
     """End-to-end pipeline state. Persisted to SQLite checkpoint after
     each node. Resume reloads this dict and continues from the next node.
@@ -58,6 +68,7 @@ class PipelineState(TypedDict, total=False):
     issue_body: str
     intake: IntakeDecisions
     research_brief: str  # markdown — research-node output
+    gap_analysis: GapAnalysis  # adversarial pre-lane output (8-lens findings)
     plan: list[Stage]  # ordered stages from plan node
     current_stage_idx: int  # which stage is being implemented right now
     code_summary: str  # what was changed, one paragraph

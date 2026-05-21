@@ -27,7 +27,7 @@ INTAKE:
 RESEARCH BRIEF:
 {research_brief}
 
-ISSUE #{issue_number}: {issue_title}
+{gap_block}ISSUE #{issue_number}: {issue_title}
 
 Produce a JSON array of stages. Each stage is one focused unit of work that an implementer can complete in a single coding session.
 
@@ -54,12 +54,39 @@ Begin:
 """
 
 
+def _format_gap(g: dict) -> str:
+    lens = g.get("lens", "?")
+    desc = g.get("gap") or g.get("description") or ""
+    rec = g.get("recommendation", "")
+    return f"- [{lens}] {desc}" + (f" — {rec}" if rec else "")
+
+
 def plan_node(state: PipelineState) -> dict:
+    gap = state.get("gap_analysis") or {}
+    blocking = gap.get("blocking_gaps") or [] if isinstance(gap, dict) else []
+    advisory = gap.get("advisory_gaps") or [] if isinstance(gap, dict) else []
+
+    parts = []
+    if blocking:
+        parts.append(
+            "MANDATORY ADDITIONAL DELIVERABLES (from system_gap_analyst — blocking_gaps "
+            "MUST each be covered by at least one stage):\n"
+            + "\n".join(_format_gap(g) for g in blocking)
+        )
+    if advisory:
+        parts.append(
+            "ADVISORY SUGGESTIONS (from system_gap_analyst — non-mandatory; "
+            "incorporate at planner discretion):\n"
+            + "\n".join(_format_gap(g) for g in advisory)
+        )
+    gap_block = ("\n\n".join(parts) + "\n\n") if parts else ""
+
     prompt = PROMPT_TEMPLATE.format(
         intake_json=json.dumps(state.get("intake", {}), indent=2),
         research_brief=state.get("research_brief", "(no research brief)"),
         issue_number=state["issue_number"],
         issue_title=state.get("issue_title", ""),
+        gap_block=gap_block,
     )
     log.info("plan: invoking claude")
     result = run_claude(
