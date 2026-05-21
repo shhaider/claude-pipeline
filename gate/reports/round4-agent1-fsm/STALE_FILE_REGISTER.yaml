@@ -1,0 +1,12 @@
+task_id: "ROUND4-AGENT1-FSM-001"
+task_area: "round4-agent1-fsm"
+created_at: "2026-05-02T12:00:00Z"
+last_updated_at: "2026-05-02T12:00:00Z"
+
+stale_files: []
+
+summary:
+  total_stale_files: 0
+  banners_added: 0
+  banners_missing: 0
+  audit_verdict: PASS

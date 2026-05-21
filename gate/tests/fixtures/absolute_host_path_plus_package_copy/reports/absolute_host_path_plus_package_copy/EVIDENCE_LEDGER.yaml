@@ -1,0 +1,38 @@
+task_id: "fixture-absolute-host-path-plus-package-copy"
+task_area: "absolute_host_path_plus_package_copy"
+created_at: "2026-05-01T00:00:00Z"
+last_updated_at: "2026-05-01T00:00:00Z"
+
+artifacts:
+  - artifact_id: E001
+    provenance_host_path: "/tmp/something_that_was_run_on_host.txt"
+    package_relative_path: "raw/test_output.txt"
+    artifact_filename: "test_output.txt"
+    artifact_type: raw_test_output
+    created_at: "2026-05-01T00:00:00Z"
+    created_by_command: "npx jest tests/foo.test.js 2>&1 | tee /tmp/something_that_was_run_on_host.txt; echo EXIT_CODE:$? >> /tmp/something_that_was_run_on_host.txt"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: [C001]
+    execution_context:
+      cwd: "/repo"
+      branch: "dev"
+      git_head: "abc123def456"
+      package_sha256: null
+      generated_from_actual_package: true
+    notes: "Host provenance recorded for traceability; the actual evidence is the in-package copy at raw/test_output.txt."
+
+summary:
+  total_artifacts: 1
+  exist_on_disk: 1
+  missing_from_disk: 0
+  included_in_package: 1
+  missing_from_package: 0
+  stale_artifacts: 0
+  audit_verdict: PASS

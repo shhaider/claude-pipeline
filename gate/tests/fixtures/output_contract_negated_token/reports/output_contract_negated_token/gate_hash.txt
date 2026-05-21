@@ -1,0 +1,4 @@
+Gate folder SHA256: d4f8a2b1c3e5f7a9b1c3e5f7a9b1c3e5f7a9b1c3e5f7a9b1c3e5f7a9b1c3e5f7
+Gate version: Gate 5.1
+Gate path at time of use: /Users/syedhaider/Downloads/gate
+Hashed at: 2026-05-01T00:00:00Z

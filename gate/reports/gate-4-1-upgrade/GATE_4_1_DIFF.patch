@@ -1,0 +1,252 @@
+# Gate 4.1 Diff — Summary Patch
+# Generated: 2026-05-01
+# Format: This is a summary patch file (gate/ is not a git repository).
+# Each section describes what changed in the corresponding file.
+
+--- a/gate/00_START.md
++++ b/gate/00_START.md
+@@ Navigation map and Next step section @@
+-Next step: Write current_state: EVIDENCE_ADEQUACY_IN_PROGRESS to CURRENT_STATE.yaml. Read 01_EVIDENCE_ADEQUACY.md.
++Navigation map: added 18_GATE_PROFILE_SELECTION as first step before evidence adequacy
++Next step: Gate 4.1 addition — Profile selection runs first. Write GATE_PROFILE_SELECTION_IN_PROGRESS. Read 18_GATE_PROFILE_SELECTION.md.
+
+--- a/gate/STATE_MACHINE.md
++++ b/gate/STATE_MACHINE.md
+@@ Initialization states @@
+-CYCLE_TRACKER_INITIALIZED exits to EVIDENCE_ADEQUACY_IN_PROGRESS
++CYCLE_TRACKER_INITIALIZED exits to GATE_PROFILE_SELECTION_IN_PROGRESS
+@@ New section: Gate Profile Selection states (Step 18) @@
++GATE_PROFILE_SELECTION_IN_PROGRESS
++GATE_PROFILE_SELECTION_COMPLETE
++GATE_PROFILE_SELECTION_BLOCKED
+@@ Evidence Adequacy entry from @@
+-Entry from: CYCLE_TRACKER_INITIALIZED, FIX_CYCLE_COMPLETE
++Entry from: GATE_PROFILE_SELECTION_COMPLETE, FIX_CYCLE_COMPLETE
+@@ New section: Gate 4.1 Additional States (Steps 19-36) @@
++[18 new state groups with ~60 new states total]
+@@ Terminal states section @@
+-PASS_HANDOFF_COMPLETE (only terminal PASS)
+-BLOCKED_HANDOFF_COMPLETE
++GATE_LITE_PASS_HANDOFF_COMPLETE
++GATE_STANDARD_PASS_HANDOFF_COMPLETE
++GATE_FULL_PASS_HANDOFF_COMPLETE
++PASS_HANDOFF_COMPLETE (preserved as legacy)
++BLOCKED_HANDOFF_COMPLETE (expanded allowed_from list)
++GATE_BLOCKED_REQUIRES_HUMAN (new)
++GATE_PROFILE_SELECTION_BLOCKED (new)
+
+--- a/gate/TRANSITION_RULES.md
++++ b/gate/TRANSITION_RULES.md
+@@ Initialization @@
++GATE_PROFILE_SELECTION_IN_PROGRESS: allowed from CYCLE_TRACKER_INITIALIZED
++GATE_PROFILE_SELECTION_COMPLETE: allowed from GATE_PROFILE_SELECTION_IN_PROGRESS
++GATE_PROFILE_SELECTION_BLOCKED: allowed from GATE_PROFILE_SELECTION_IN_PROGRESS
+@@ Evidence adequacy @@
+-allowed from: CYCLE_TRACKER_INITIALIZED, FIX_CYCLE_COMPLETE
++allowed from: GATE_PROFILE_SELECTION_COMPLETE, FIX_CYCLE_COMPLETE
+@@ New section: Gate 4.1 Additional Transitions (Steps 19-36) @@
++[All transitions for Steps 19-36]
+@@ Terminal states @@
++GATE_LITE_PASS_HANDOFF_COMPLETE
++GATE_STANDARD_PASS_HANDOFF_COMPLETE
++GATE_FULL_PASS_HANDOFF_COMPLETE
++GATE_BLOCKED_REQUIRES_HUMAN
++GATE_PROFILE_SELECTION_BLOCKED
+
+--- a/gate/STATE_SCHEMA.md
++++ b/gate/STATE_SCHEMA.md
+@@ Top-level fields @@
++gate_profile: GATE_LITE | GATE_STANDARD | GATE_FULL | GATE_FULL_PLUS_DOMAIN_ADDENDUM | null
++risk_tier: D0 | D1 | D2 | D2-hot | D3 | D4 | null
++domain_addenda: list[string] | null
++profile_override_required: boolean | null
++profile_selection_rationale: string | null
+@@ Per-cycle results @@
++prompt_contract_review_result: ... | null
++production_caller_audit_result: ... | null
++[17 more Gate 4.1 per-cycle audit result fields]
++final_outcome_label: LIVE_BEHAVIOR_FIXED | INFRASTRUCTURE_READY_NOT_WIRED | ... | null
+@@ New section: Gate 4.1 Overclaim Taxonomy @@
++[10 final outcome labels with definitions and hard rule]
+@@ Validation rules @@
++Rules 9-13 added for Gate 4.1 profile constraints
+
+--- a/gate/06_R2_ACTIVE_PROOF.md
++++ b/gate/06_R2_ACTIVE_PROOF.md
+@@ New section appended: Gate 4.1 Artifact Lifecycle Timing Audit @@
++HEAD_SHA_TIMING_VIOLATION check
++PACKAGE_GENERATED_EARLY check
++HANDOFF_VALIDATED_EARLY check
++FINAL_PATH_MEMORY_ONLY check
+
+--- a/gate/07_R3_AI_PATTERNS.md
++++ b/gate/07_R3_AI_PATTERNS.md
+@@ New section: Gate 4.1 Additional patterns @@
++wrong_gate_profile_too_weak
++production_caller_overclaim
++consumer_api_bypass
++warning_contradicts_success
++wrong_required_test_set
++manifest_self_size_stale_or_zero
++migration_sql_only_runner_not_proven
++prompt_invalid_js_snippet
++helper_test_only_claiming_production
++file_exists_on_host_missing_from_export
+
+--- a/gate/12_PASS_HANDOFF.md
++++ b/gate/12_PASS_HANDOFF.md
+@@ Final status section @@
++Final outcome label (Gate 4.1 — required): [10 label options]
++Hard rule: READY_FOR_HANDOFF alone insufficient for Gate 4.1
+
+--- a/gate/13_BLOCKED_HANDOFF.md
++++ b/gate/13_BLOCKED_HANDOFF.md
+@@ Appended: Gate 4.1 Overclaim taxonomy for blocked handoffs @@
++5 labels for blocked handoffs
+
+--- a/gate/15_FINAL_PACKAGE_AUDIT.md
++++ b/gate/15_FINAL_PACKAGE_AUDIT.md
+@@ Appended: Gate 4.1 Manifest Finalization checks @@
++stat-based file size check (Step A)
++sha256sum hash generation (Step B)
++manifest self-size check (Step C)
+@@ Appended: Gate 4.1 Warning Output Findings section @@
+
+--- a/gate/16_CANONICAL_HANDOFF_AUDIT.md
++++ b/gate/16_CANONICAL_HANDOFF_AUDIT.md
+@@ Appended: Gate 4.1 Overclaim taxonomy verification @@
++Final outcome label must be present
++LIVE_BEHAVIOR_FIXED requires production caller proof
++MERGE_VERIFIED requires git log proof
+
+--- a/gate/03_EVIDENCE_CONSISTENCY.md
++++ b/gate/03_EVIDENCE_CONSISTENCY.md
+@@ Appended to Check 7: Gate 4.1 Diff base verification @@
++git merge-base check
++out-of-scope file detection
++prerequisite for Step 30
+
+--- a/gate/PACKAGE_MANIFEST_TEMPLATE.md
++++ b/gate/PACKAGE_MANIFEST_TEMPLATE.md
+@@ New section: Gate 4.1 Proof files by profile @@
++Profile-specific required proof files table
++NOT_APPLICABLE proof files table
+@@ New section: Gate 4.1 Package integrity @@
++stat / hash verification entries
+@@ Manifest audit result section @@
++NOT_APPLICABLE files count
++Gate profile proof files complete flag
+
+--- a/gate/SCRIPT_SPEC_check_gate_package.md
++++ b/gate/SCRIPT_SPEC_check_gate_package.md
+@@ Appended: Gate 4.1 Additional checks @@
++verify_gate_profile()
++load_required_proof_files()
++verify_required_proof_files()
++verify_manifest_file_sizes()
++verify_manifest_hashes()
++verify_final_git_status_proof()
++verify_raw_output_exit_codes()
++verify_package_listing_from_export()
++verify_gate_source_included()
++verify_local_only_gate_paths()
++verify_next_prompt_decision_for_d2plus()
++Updated main() incorporating all new checks
+
+--- a/gate/STATE_FILE_TEMPLATE.yaml
++++ b/gate/STATE_FILE_TEMPLATE.yaml
+@@ New fields after current_state/gate_completed @@
++gate_profile: null
++risk_tier: null
++domain_addenda: null
++profile_override_required: null
++profile_selection_rationale: null
+@@ Per-cycle: after execution_context fields @@
++21 new Gate 4.1 per-cycle audit result fields
++final_outcome_label: null
+
+--- a/gate/CYCLE_TRACKER_TEMPLATE.md
++++ b/gate/CYCLE_TRACKER_TEMPLATE.md
+@@ New section at top: Gate 4.1 Profile selection @@
++gate_profile, risk_tier, domain_addenda, profile_override_required, rationale
+@@ New section at bottom: Gate 4.1 Final outcome fields @@
++terminal state, final outcome label, additional audits run, effectiveness log
+
+--- a/gate/SELF_TEST_GATE_STATE_MACHINE.md
++++ b/gate/SELF_TEST_GATE_STATE_MACHINE.md
+@@ Appended: Gate 4.1 Self-test questions 15-24 @@
++Q15: wrong_gate_profile_too_weak → YES caught
++Q16: production_caller_overclaim → YES caught
++Q17: consumer_api_bypass → YES caught
++Q18: warning_contradicts_success → YES caught
++Q19: wrong_required_test_set → YES caught
++Q20: manifest_self_size_stale → YES caught
++Q21: migration_sql_only_runner_not_proven → YES caught
++Q22: prompt_invalid_js_snippet → YES caught
++Q23: helper_test_only_claiming_production → YES caught
++Q24: file_exists_on_host_missing_from_export → YES caught
+@@ Updated overall assessment table with 10 new rows @@
+
+### New files (all new, no diff base)
+
+CREATED: gate/GATE_PROFILES.md
+CREATED: gate/GATE_PROFILE_SELECTOR.md
+CREATED: gate/18_GATE_PROFILE_SELECTION.md
+CREATED: gate/GATE_PROFILE_SELECTION_TEMPLATE.md
+CREATED: gate/19_PROMPT_CONTRACT_REVIEW.md
+CREATED: gate/PROMPT_CONTRACT_REVIEW_TEMPLATE.md
+CREATED: gate/ARTIFACT_LIFECYCLE_TIMING_AUDIT_TEMPLATE.md
+CREATED: gate/20_PRODUCTION_CALLER_ACTIVE_PATH_AUDIT.md
+CREATED: gate/PRODUCTION_CALLER_ACTIVE_PATH_AUDIT_TEMPLATE.md
+CREATED: gate/21_CONSUMER_API_PROOF_AUDIT.md
+CREATED: gate/CONSUMER_API_PROOF_AUDIT_TEMPLATE.md
+CREATED: gate/22_WARNING_OUTPUT_AUDIT.md
+CREATED: gate/WARNING_OUTPUT_AUDIT_TEMPLATE.md
+CREATED: gate/23_REQUIRED_TEST_SET_EXACTNESS.md
+CREATED: gate/REQUIRED_TEST_SET_EXACTNESS_TEMPLATE.md
+CREATED: gate/MANIFEST_FINALIZATION_AUDIT_TEMPLATE.md
+CREATED: gate/24_MIGRATION_RUNNER_PROOF.md
+CREATED: gate/MIGRATION_RUNNER_PROOF_TEMPLATE.md
+CREATED: gate/25_IMPLEMENTER_PROMPT_LINT.md
+CREATED: gate/IMPLEMENTER_PROMPT_LINT_TEMPLATE.md
+CREATED: gate/26_STRANDED_HELPER_UNUSED_EXPORT_AUDIT.md
+CREATED: gate/STRANDED_HELPER_UNUSED_EXPORT_AUDIT_TEMPLATE.md
+CREATED: gate/27_DIRTY_WORKTREE_RECURRENCE_AUDIT.md
+CREATED: gate/DIRTY_WORKTREE_RECURRENCE_TEMPLATE.md
+CREATED: gate/28_WORK_ALLOCATION_AUDIT.md
+CREATED: gate/WORK_ALLOCATION_AUDIT_TEMPLATE.md
+CREATED: gate/29_EXPORT_CHANNEL_AUDIT.md
+CREATED: gate/EXPORT_CHANNEL_AUDIT_TEMPLATE.md
+CREATED: gate/30_DIFF_BASE_SCOPE_AUDIT.md
+CREATED: gate/DIFF_BASE_SCOPE_AUDIT_TEMPLATE.md
+CREATED: gate/31_FLAKE_TIMEOUT_LOAD_AUDIT.md
+CREATED: gate/FLAKE_TIMEOUT_LOAD_AUDIT_TEMPLATE.md
+CREATED: gate/32_CONCURRENCY_ASSUMPTIONS_AUDIT.md
+CREATED: gate/CONCURRENCY_ASSUMPTIONS_AUDIT_TEMPLATE.md
+CREATED: gate/33_DOWNSTREAM_CONSUMER_READINESS_AUDIT.md
+CREATED: gate/DOWNSTREAM_CONSUMER_READINESS_TEMPLATE.md
+CREATED: gate/34_NEXT_PROMPT_DECISION.md
+CREATED: gate/NEXT_PROMPT_DECISION_TEMPLATE.md
+CREATED: gate/35_CTO_OPERATOR_INSIGHT_REVIEW.md
+CREATED: gate/CTO_OPERATOR_INSIGHT_REVIEW_TEMPLATE.md
+CREATED: gate/36_GATE_EFFECTIVENESS_LOG.md
+CREATED: gate/GATE_EFFECTIVENESS_LOG_TEMPLATE.md
+CREATED: gate/PROOF_FILE_REQUIREMENTS.md
+CREATED: gate/REQUIRED_PROOF_FILES_BY_PROFILE.yaml
+CREATED: gate/GATE_4_1_USAGE_GUIDE.md
+CREATED: gate/reports/gate-4-1-upgrade/GATE_4_1_BASELINE.md
+CREATED: gate/reports/gate-4-1-upgrade/GATE_4_1_CHANGED_FILES.md
+CREATED: gate/reports/gate-4-1-upgrade/GATE_4_1_HANDOFF.md
+CREATED: gate/reports/gate-4-1-upgrade/GATE_4_1_OPEN_QUESTIONS.md
+CREATED: gate/reports/gate-4-1-upgrade/GATE_4_1_USAGE_RECOMMENDATION.md
+CREATED: gate/reports/gate-4-1-upgrade/GATE_4_1_DIFF.patch (this file)
+CREATED: gate/tests/gate_state_machine/fixtures/wrong_gate_profile_too_weak/FIXTURE_SPEC.md
+CREATED: gate/tests/gate_state_machine/fixtures/production_caller_overclaim/FIXTURE_SPEC.md
+CREATED: gate/tests/gate_state_machine/fixtures/consumer_api_bypass/FIXTURE_SPEC.md
+CREATED: gate/tests/gate_state_machine/fixtures/warning_contradicts_success/FIXTURE_SPEC.md
+CREATED: gate/tests/gate_state_machine/fixtures/wrong_required_test_set/FIXTURE_SPEC.md
+CREATED: gate/tests/gate_state_machine/fixtures/manifest_self_size_stale/FIXTURE_SPEC.md
+CREATED: gate/tests/gate_state_machine/fixtures/migration_sql_only_runner_not_proven/FIXTURE_SPEC.md
+CREATED: gate/tests/gate_state_machine/fixtures/prompt_invalid_js_snippet/FIXTURE_SPEC.md
+CREATED: gate/tests/gate_state_machine/fixtures/helper_test_only_claiming_production/FIXTURE_SPEC.md
+CREATED: gate/tests/gate_state_machine/fixtures/file_exists_on_host_missing_from_export/FIXTURE_SPEC.md

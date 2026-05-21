@@ -1,0 +1,5 @@
+/Users/agent/clawcodex/reports/agentos-ng-001/HANDOFF.md
+/Users/agent/clawcodex/reports/agentos-ng-001/CYCLE_TRACKER.md
+/Users/agent/clawcodex/reports/agentos-ng-001/COLD_REVIEW_ADJUDICATION.md
+/Users/agent/clawcodex/reports/agentos-ng-001/implementation.patch
+/Users/agent/clawcodex/reports/agentos-ng-001/test_output.log

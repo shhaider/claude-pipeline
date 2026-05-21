@@ -1,0 +1,47 @@
+task_id: "AGENTOS-NG-001"
+task_area: "agentos-ng-001"
+gate_run_id: "gate-2026-04-30T12:00:00"
+gate_started_at: "2026-04-30T10:00:00Z"
+last_updated_at: "2026-04-30T12:00:00Z"
+
+# BUG: state claims PASS_HANDOFF_COMPLETE but execution_context_audit_result is missing
+current_state: PASS_HANDOFF_COMPLETE
+gate_completed: true
+
+cycle_count: 3
+max_cycles: 5
+
+claims_ledger_path: "reports/agentos-ng-001/CLAIMS_LEDGER.yaml"
+evidence_ledger_path: "reports/agentos-ng-001/EVIDENCE_LEDGER.yaml"
+package_manifest_path: "reports/agentos-ng-001/PACKAGE_MANIFEST.md"
+stale_file_register_path: "reports/agentos-ng-001/STALE_FILE_REGISTER.yaml"
+cycle_tracker_path: "reports/agentos-ng-001/CYCLE_TRACKER.md"
+
+state_history:
+  - state: GATE_NOT_STARTED
+    entered_at: "2026-04-30T10:00:00Z"
+    exited_at: "2026-04-30T10:01:00Z"
+  # ... prior states omitted for brevity ...
+  - state: CANONICAL_HANDOFF_AUDIT_PASS
+    entered_at: "2026-04-30T11:55:00Z"
+    exited_at: "2026-04-30T12:00:00Z"
+  - state: PASS_HANDOFF_COMPLETE   # BUG: skipped EXECUTION_CONTEXT_AUDIT
+    entered_at: "2026-04-30T12:00:00Z"
+    exited_at: null
+
+cycles:
+  3:
+    r5_verdict: READY_FOR_REVIEW
+    gate_verdict: PASS_FOR_HANDOFF
+    execution_context_audit_applicable: null   # BUG: not set
+    execution_context_audit_result: null       # BUG: not set — schema violation
+
+final_package_audit_result: PASS
+canonical_handoff_audit_result: PASS
+execution_context_audit_result: null           # BUG: null is not PASS or NOT_APPLICABLE
+
+final_gate_verdict: PASS_FOR_HANDOFF
+final_r5_verdict: READY_FOR_REVIEW
+handoff_type: PASS
+handoff_completed_at: "2026-04-30T12:00:00Z"
+remaining_human_blocked_blockers: null

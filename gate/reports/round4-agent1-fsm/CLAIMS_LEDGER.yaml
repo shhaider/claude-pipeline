@@ -1,0 +1,126 @@
+task_id: "ROUND4-AGENT1-FSM-001"
+task_area: "round4-agent1-fsm"
+created_at: "2026-05-02T12:00:00Z"
+last_updated_at: "2026-05-02T12:00:00Z"
+
+claims:
+  - claim_id: C001
+    claim_text: "15/15 Playwright tests passing on branch agentostest-fsm"
+    source_document: "CYCLE_TRACKER.md"
+    source_section: "Panel results / Evidence Adequacy"
+    claim_type: HARD_FACT
+    evidence_artifact_id: "E001"
+    evidence_artifact_path: "/Users/syedhaider/Downloads/gate/reports/round4-agent1-fsm/playwright_raw_output.txt"
+    evidence_in_package: YES
+    package_path_of_evidence: "round4-agent1-fsm/playwright_raw_output.txt"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context:
+      cwd: "/Users/syedhaider/.codex/agentos_ng/gui"
+      branch: "agentostest-fsm"
+      git_head: "ef212cfdcdea0ee971d52a476c7c82caeb8b9818"
+      raw_output_path: "reports/round4-agent1-fsm/playwright_raw_output.txt"
+      source_of_truth_checked: "playwright test output"
+      observed_context: "15 passed"
+      expected_context: "15 passed"
+      context_matches: true
+    notes: "EXIT_CODE:0 present at end of file"
+
+  - claim_id: C002
+    claim_text: "provider_used SSE event emits provider:anthropic for chat requests"
+    source_document: "CYCLE_TRACKER.md"
+    source_section: "Evidence layer"
+    claim_type: HARD_FACT
+    evidence_artifact_id: "E002"
+    evidence_artifact_path: "/Users/syedhaider/Downloads/gate/reports/round4-agent1-fsm/curl_provider_verify.txt"
+    evidence_in_package: YES
+    package_path_of_evidence: "round4-agent1-fsm/curl_provider_verify.txt"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context:
+      cwd: "/Users/syedhaider/.codex/agentos_ng"
+      branch: "agentostest-fsm"
+      git_head: "ef212cfdcdea0ee971d52a476c7c82caeb8b9818"
+      raw_output_path: "reports/round4-agent1-fsm/curl_provider_verify.txt"
+      source_of_truth_checked: "curl response"
+      observed_context: "provider:anthropic"
+      expected_context: "provider:anthropic"
+      context_matches: true
+    notes: ""
+
+  - claim_id: C003
+    claim_text: "Software pipeline generates real code files via LLM (files_written populated)"
+    source_document: "CYCLE_TRACKER.md"
+    source_section: "Evidence layer"
+    claim_type: HARD_FACT
+    evidence_artifact_id: "E003"
+    evidence_artifact_path: "/Users/syedhaider/Downloads/gate/reports/round4-agent1-fsm/curl_impl_verify.txt"
+    evidence_in_package: YES
+    package_path_of_evidence: "round4-agent1-fsm/curl_impl_verify.txt"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context:
+      cwd: "/Users/syedhaider/.codex/agentos_ng"
+      branch: "agentostest-fsm"
+      git_head: "ef212cfdcdea0ee971d52a476c7c82caeb8b9818"
+      raw_output_path: "reports/round4-agent1-fsm/curl_impl_verify.txt"
+      source_of_truth_checked: "curl SSE response"
+      observed_context: "files_written: server.js, impl_status: complete"
+      expected_context: "files written, impl_status complete"
+      context_matches: true
+    notes: ""
+
+  - claim_id: C004
+    claim_text: "call_gateway_shim.js and newsroom_config_shim.js load without errors"
+    source_document: "CYCLE_TRACKER.md"
+    source_section: "Evidence layer"
+    claim_type: HARD_FACT
+    evidence_artifact_id: "E004"
+    evidence_artifact_path: "/Users/syedhaider/Downloads/gate/reports/round4-agent1-fsm/shim_load_test.txt"
+    evidence_in_package: YES
+    package_path_of_evidence: "round4-agent1-fsm/shim_load_test.txt"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context:
+      cwd: "/Users/syedhaider/.codex/agentos_ng"
+      branch: "agentostest-fsm"
+      git_head: "ef212cfdcdea0ee971d52a476c7c82caeb8b9818"
+      raw_output_path: "reports/round4-agent1-fsm/shim_load_test.txt"
+      source_of_truth_checked: "node -e require()"
+      observed_context: "call_gateway_shim: ok, newsroom_config_shim: ok"
+      expected_context: "both modules load ok"
+      context_matches: true
+    notes: ""
+
+  - claim_id: C005
+    claim_text: "index.html was updated to reference new build index-BeRDYqva.js (was index-B_Z4bsUZ.js)"
+    source_document: "CYCLE_TRACKER.md"
+    source_section: "Root cause of Alice test fix"
+    claim_type: HARD_FACT
+    evidence_artifact_id: "E005"
+    evidence_artifact_path: "/Users/syedhaider/Downloads/gate/reports/round4-agent1-fsm/uncommitted_index_html.diff"
+    evidence_in_package: YES
+    package_path_of_evidence: "round4-agent1-fsm/uncommitted_index_html.diff"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context:
+      cwd: "/Users/syedhaider/.codex/agentos_ng"
+      branch: "agentostest-fsm"
+      git_head: "ef212cfdcdea0ee971d52a476c7c82caeb8b9818"
+      raw_output_path: "reports/round4-agent1-fsm/uncommitted_index_html.diff"
+      source_of_truth_checked: "git diff gui/public/index.html"
+      observed_context: "index-B_Z4bsUZ.js → index-BeRDYqva.js"
+      expected_context: "updated to new build"
+      context_matches: true
+    notes: "This change is unstaged — needs to be committed"
+
+summary:
+  total_claims: 5
+  hard_fact_claims: 5
+  hard_fact_verified: 5
+  hard_fact_failed: 0
+  source_missing: 0
+  not_in_package: 0
+  local_path_only: 0
+  source_contradicts: 0
+  audit_verdict: PASS

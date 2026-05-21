@@ -1,0 +1,5 @@
+PASS tests/foo.test.js
+Tests: 3 passed, 3 total
+Time: 1.2 s
+Ran all test suites.
+EXIT_CODE:0

@@ -1,0 +1,28 @@
+task_id: "gate-5-4-known-issue-closure"
+task_area: "gate-5-4-known-issue-closure"
+created_at: "2026-05-01T17:27:09Z"
+last_updated_at: "2026-05-01T18:15:00Z"
+
+artifacts:
+  - artifact_id: E001
+    artifact_path: "reports/gate-5-4-known-issue-closure/raw_test_output.txt"
+    artifact_filename: "raw_test_output.txt"
+    artifact_type: raw_test_output
+    created_at: "2026-05-01T18:15:00Z"
+    created_by_command: "python3 -m pytest -q tests/test_check_gate_package.py && python3 tests/test_check_gate_package.py"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "reports/gate-5-4-known-issue-closure/raw_test_output.txt"
+    verified_in_package: true
+    stale: false
+    notes: "Gate 5.4 self-test proof with bare EXIT_CODE:0 for the signout package."
+
+summary:
+  total_artifacts: 1
+  exist_on_disk: 1
+  missing_from_disk: 0
+  included_in_package: 1
+  missing_from_package: 0
+  stale_artifacts: 0
+  audit_verdict: PASS

@@ -1,0 +1,14 @@
+task_id: "fixture-happy-path"
+task_area: "happy_path_gate_full"
+gate_run_id: "GR-FIXTURE-001"
+gate_started_at: "2026-05-01T00:00:00Z"
+current_state: GATE_FULL_PASS_HANDOFF_COMPLETE
+gate_completed: true
+final_gate_verdict: PASS_FOR_HANDOFF
+gate_profile: GATE_FULL
+risk_tier: D3
+handoff_type: PASS
+handoff_completed_at: "2026-05-01T01:00:00Z"
+final_package_audit_result: PASS
+canonical_handoff_audit_result: PASS
+execution_context_audit_result: NOT_APPLICABLE

@@ -1,0 +1,86 @@
+task_id: "GATE-SM-UPGRADE-2026-05-01"
+task_area: "gate-state-machine-upgrade-session-2026-05-01"
+created_at: "2026-05-01T00:01:00Z"
+last_updated_at: "2026-05-01T00:34:00Z"
+
+claims:
+  - claim_id: C001
+    claim_text: "17 new/updated gate step files and templates delivered on disk at /Users/syedhaider/Downloads/gate/"
+    source_document: "reports/gate-state-machine-upgrade-2026-04-30/HANDOFF.md"
+    source_section: "Deliverables"
+    claim_type: HARD_FACT
+    evidence_artifact_id: E001
+    evidence_artifact_path: "/Users/syedhaider/Downloads/gate/"
+    evidence_in_package: NOT_APPLICABLE
+    package_path_of_evidence: null
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context: null
+    notes: "22 primary deliverable files confirmed present via find command in Step 15. All files listed in manifest verified on disk."
+
+  - claim_id: C002
+    claim_text: "SELF_TEST Q9 stale routing text was found and fixed during gate self-run"
+    source_document: "reports/gate-state-machine-upgrade-2026-04-30/CYCLE_TRACKER.md"
+    source_section: "Evidence Consistency Preflight"
+    claim_type: HARD_FACT
+    evidence_artifact_id: E002
+    evidence_artifact_path: "/Users/syedhaider/Downloads/gate/SELF_TEST_GATE_STATE_MACHINE.md"
+    evidence_in_package: NOT_APPLICABLE
+    package_path_of_evidence: null
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context: null
+    notes: "Q9 text confirmed correct in evidence adequacy assessment (grep output) and R2 additional verification. File present on disk."
+
+  - claim_id: C003
+    claim_text: "Gate skill registered at ~/.claude/skills/gate/SKILL.md and invokable as /gate"
+    source_document: "reports/gate-state-machine-upgrade-2026-04-30/HANDOFF.md"
+    source_section: "Skill registration"
+    claim_type: HARD_FACT
+    evidence_artifact_id: E003
+    evidence_artifact_path: "/Users/syedhaider/.claude/skills/gate/SKILL.md"
+    evidence_in_package: NOT_APPLICABLE
+    package_path_of_evidence: null
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context: null
+    notes: "File confirmed present via ls in Step 15 physical audit."
+
+  - claim_id: C004
+    claim_text: "PASS_HANDOFF_COMPLETE is only allowed from EXECUTION_CONTEXT_AUDIT_PASS or EXECUTION_CONTEXT_AUDIT_NOT_APPLICABLE (TRANSITION_RULES.md)"
+    source_document: "/Users/syedhaider/Downloads/gate/TRANSITION_RULES.md"
+    source_section: "PASS_HANDOFF_COMPLETE allowed-from"
+    claim_type: HARD_FACT
+    evidence_artifact_id: E004
+    evidence_artifact_path: "/Users/syedhaider/Downloads/gate/TRANSITION_RULES.md"
+    evidence_in_package: NOT_APPLICABLE
+    package_path_of_evidence: null
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context: null
+    notes: "Grep confirmed EXECUTION_CONTEXT state references in TRANSITION_RULES.md during evidence adequacy; file present on disk."
+
+  - claim_id: C005
+    claim_text: "Previous gate run PASS_HANDOFF_COMPLETE with execution_context_audit_result: NOT_APPLICABLE recorded in CURRENT_STATE.yaml"
+    source_document: "reports/gate-state-machine-upgrade-2026-04-30/CURRENT_STATE.yaml"
+    source_section: "Terminal fields"
+    claim_type: HARD_FACT
+    evidence_artifact_id: E005
+    evidence_artifact_path: "/Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-2026-04-30/CURRENT_STATE.yaml"
+    evidence_in_package: NOT_APPLICABLE
+    package_path_of_evidence: null
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context: null
+    notes: "Prior CURRENT_STATE.yaml read and confirmed terminal state PASS_HANDOFF_COMPLETE with execution_context_audit_result NOT_APPLICABLE."
+
+summary:
+  total_claims: 5
+  hard_fact_claims: 5
+  hard_fact_verified: 5
+  hard_fact_failed: 0
+  source_missing: 0
+  not_in_package: 0
+  local_path_only: 0
+  source_contradicts: 0
+  audit_verdict: PASS

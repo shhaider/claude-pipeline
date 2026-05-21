@@ -1,0 +1,171 @@
+# Required proof files by gate profile — Gate 5.4
+# Machine-readable. Used by check_gate_package.py to validate package completeness.
+#
+# Format: each profile lists required_always, required_conditional, and not_applicable.
+# required_always: always required when this profile is selected
+# required_conditional: required when the stated condition is true
+# not_applicable: these states must have NOT_APPLICABLE proof files for this profile
+
+GATE_LITE:
+  required_always:
+    - reports/{task_area}/GATE_PROFILE_SELECTION.md
+    - reports/{task_area}/CURRENT_STATE.yaml
+    - reports/{task_area}/CYCLE_TRACKER.md
+    - reports/{task_area}/CLAIMS_LEDGER.yaml
+    - reports/{task_area}/EVIDENCE_LEDGER.yaml
+    - reports/{task_area}/STALE_FILE_REGISTER.yaml
+    - reports/{task_area}/PACKAGE_MANIFEST.md
+    - reports/{task_area}/EVIDENCE_ADEQUACY_ASSESSMENT.md
+    - reports/{task_area}/EVIDENCE_CONSISTENCY_REGISTER.md
+    - reports/{task_area}/COLD_REVIEW_REQUIREMENTS_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_ACTIVE_PROOF_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_AI_FAILURE_PATTERN_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_HANDOFF_COMPLETENESS_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_ADJUDICATION.md
+    - reports/{task_area}/HANDOFF.md
+  required_conditional:
+    - condition: enforcement_audit_applicable == true
+      file: reports/{task_area}/ENFORCEMENT_AUTHORITY_AUDIT.md
+    - condition: evidence_upgrade_required == true
+      file: reports/{task_area}/TEST_AND_EVIDENCE_PLAN.md
+    - condition: migration_present == true
+      file: reports/{task_area}/MIGRATION_RUNNER_PROOF.md
+    - condition: execution_context_claims_present == true
+      file: reports/{task_area}/EXECUTION_CONTEXT_AUDIT.md
+    # Gate 5.3: required when this Lite package is being returned to operator
+    # as signout/export. NOT_APPLICABLE allowed only if a substantive
+    # FINAL_PACKET_AUDITOR_NOT_APPLICABLE.md is present in the package.
+    - condition: package_returned_to_operator_as_signout == true
+      file: reports/{task_area}/FINAL_PACKET_AUDITOR_REPORT.md
+  # Gate 5.2-R1: NA proofs are now enforced as a hard requirement (was advisory). The
+  # list below is the trimmed GATE_LITE set — only those states whose explicit
+  # NOT_APPLICABLE proof we actually want to see in every Lite package. States that
+  # are inherently inapplicable for D0/D1 work (e.g. CONCURRENCY, MIGRATION_RUNNER)
+  # are no longer enforced via NA proof; their non-applicability is implicit in the
+  # profile's `required_always` list and the profile selector's risk tier.
+  not_applicable_proof_required:
+    - PRODUCTION_CALLER_AUDIT
+    - CONSUMER_API_PROOF_AUDIT
+    - WARNING_OUTPUT_AUDIT
+    - REQUIRED_TEST_SET_EXACTNESS
+    - STRANDED_HELPER_AUDIT
+    - EXPORT_CHANNEL_AUDIT
+    - DIFF_BASE_SCOPE_AUDIT
+    - DIRTY_WORKTREE_RECURRENCE_AUDIT
+
+GATE_STANDARD:
+  required_always:
+    - reports/{task_area}/GATE_PROFILE_SELECTION.md
+    - reports/{task_area}/CURRENT_STATE.yaml
+    - reports/{task_area}/CYCLE_TRACKER.md
+    - reports/{task_area}/CLAIMS_LEDGER.yaml
+    - reports/{task_area}/EVIDENCE_LEDGER.yaml
+    - reports/{task_area}/STALE_FILE_REGISTER.yaml
+    - reports/{task_area}/PACKAGE_MANIFEST.md
+    - reports/{task_area}/EVIDENCE_ADEQUACY_ASSESSMENT.md
+    - reports/{task_area}/EVIDENCE_CONSISTENCY_REGISTER.md
+    - reports/{task_area}/COLD_REVIEW_REQUIREMENTS_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_ACTIVE_PROOF_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_AI_FAILURE_PATTERN_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_HANDOFF_COMPLETENESS_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_ADJUDICATION.md
+    - reports/{task_area}/HANDOFF.md
+    - reports/{task_area}/EXPORT_CHANNEL_AUDIT.md
+    - reports/{task_area}/DIFF_BASE_SCOPE_AUDIT.md
+    - reports/{task_area}/NEXT_PROMPT_DECISION.md
+    - reports/{task_area}/package_file_sizes.txt
+    # Gate 5.1: these were required_conditional but GATE_PROFILES.md says YES for Standard;
+    # moving to required_always to match prose (raw_output presence assumed for Standard tasks)
+    - reports/{task_area}/WARNING_OUTPUT_AUDIT.md          # required if raw outputs present; produce NOT_APPLICABLE if none
+    - reports/{task_area}/REQUIRED_TEST_SET_EXACTNESS.md   # required if raw outputs present; produce NOT_APPLICABLE if none
+    # Gate 5.3: final independent packet auditor — required for every Standard signout
+    - reports/{task_area}/FINAL_PACKET_AUDITOR_REPORT.md
+  required_conditional:
+    - condition: enforcement_audit_applicable == true
+      file: reports/{task_area}/ENFORCEMENT_AUTHORITY_AUDIT.md
+    - condition: evidence_upgrade_required == true
+      file: reports/{task_area}/TEST_AND_EVIDENCE_PLAN.md
+    - condition: migration_present == true
+      file: reports/{task_area}/MIGRATION_RUNNER_PROOF.md
+    - condition: execution_context_claims_present == true
+      file: reports/{task_area}/EXECUTION_CONTEXT_AUDIT.md
+    - condition: live_behavior_claimed == true
+      file: reports/{task_area}/PRODUCTION_CALLER_AUDIT.md
+    - condition: consumer_api_added == true
+      file: reports/{task_area}/CONSUMER_API_PROOF_AUDIT.md
+    - condition: new_symbols_added == true
+      file: reports/{task_area}/STRANDED_HELPER_AUDIT.md
+    - condition: implementation_prompts_present == true
+      file: reports/{task_area}/IMPLEMENTER_PROMPT_LINT.md
+    - condition: timing_sensitive_tests_found == true
+      file: reports/{task_area}/FLAKE_TIMEOUT_AUDIT.md
+    - condition: next_phase_declared_ready == true
+      file: reports/{task_area}/DOWNSTREAM_CONSUMER_READINESS.md
+    - condition: hotfile_in_touch_map == true or complex_prompt == true
+      file: reports/{task_area}/PROMPT_CONTRACT_REVIEW.md
+  not_applicable_proof_required:
+    - DIRTY_WORKTREE_RECURRENCE_AUDIT
+    - CONCURRENCY_ASSUMPTIONS_AUDIT
+    - CTO_OPERATOR_INSIGHT_REVIEW
+    - GATE_EFFECTIVENESS_LOG
+
+GATE_FULL:
+  required_always:
+    - reports/{task_area}/GATE_PROFILE_SELECTION.md
+    - reports/{task_area}/CURRENT_STATE.yaml
+    - reports/{task_area}/CYCLE_TRACKER.md
+    - reports/{task_area}/CLAIMS_LEDGER.yaml
+    - reports/{task_area}/EVIDENCE_LEDGER.yaml
+    - reports/{task_area}/STALE_FILE_REGISTER.yaml
+    - reports/{task_area}/PACKAGE_MANIFEST.md
+    - reports/{task_area}/EVIDENCE_ADEQUACY_ASSESSMENT.md
+    - reports/{task_area}/EVIDENCE_CONSISTENCY_REGISTER.md
+    - reports/{task_area}/COLD_REVIEW_REQUIREMENTS_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_ACTIVE_PROOF_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_AI_FAILURE_PATTERN_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_HANDOFF_COMPLETENESS_AUDIT.md
+    - reports/{task_area}/COLD_REVIEW_ADJUDICATION.md
+    - reports/{task_area}/HANDOFF.md
+    - reports/{task_area}/PROMPT_CONTRACT_REVIEW.md
+    - reports/{task_area}/PRODUCTION_CALLER_AUDIT.md
+    - reports/{task_area}/CONSUMER_API_PROOF_AUDIT.md
+    - reports/{task_area}/WARNING_OUTPUT_AUDIT.md
+    - reports/{task_area}/REQUIRED_TEST_SET_EXACTNESS.md
+    - reports/{task_area}/STRANDED_HELPER_AUDIT.md
+    - reports/{task_area}/EXPORT_CHANNEL_AUDIT.md
+    - reports/{task_area}/DIFF_BASE_SCOPE_AUDIT.md
+    - reports/{task_area}/DIRTY_WORKTREE_RECURRENCE.md
+    - reports/{task_area}/FLAKE_TIMEOUT_AUDIT.md
+    - reports/{task_area}/DOWNSTREAM_CONSUMER_READINESS.md
+    - reports/{task_area}/NEXT_PROMPT_DECISION.md
+    - reports/{task_area}/CTO_OPERATOR_INSIGHT_REVIEW.md
+    - reports/{task_area}/GATE_EFFECTIVENESS_LOG.md
+    - reports/{task_area}/OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md
+    - reports/{task_area}/package_file_sizes.txt
+    - reports/{task_area}/package_file_hashes.txt
+    # Gate 5.1 additions
+    - reports/{task_area}/GATE_PACKAGE_VALIDATION_REPORT.md  # produced by check_gate_package.py; circular dep: skip on first run
+    # Gate 5.3 — final independent packet auditor; mandatory for every Full signout
+    - reports/{task_area}/FINAL_PACKET_AUDITOR_REPORT.md
+  required_conditional:
+    - condition: enforcement_audit_applicable == true
+      file: reports/{task_area}/ENFORCEMENT_AUTHORITY_AUDIT.md
+    - condition: evidence_upgrade_required == true
+      file: reports/{task_area}/TEST_AND_EVIDENCE_PLAN.md
+    - condition: migration_present == true
+      file: reports/{task_area}/MIGRATION_RUNNER_PROOF.md
+    - condition: execution_context_claims_present == true
+      file: reports/{task_area}/EXECUTION_CONTEXT_AUDIT.md
+    - condition: implementation_prompts_present == true
+      file: reports/{task_area}/IMPLEMENTER_PROMPT_LINT.md
+    - condition: multi_agent_or_hotfile_conflict == true
+      file: reports/{task_area}/WORK_ALLOCATION_AUDIT.md
+    - condition: state_or_queue_or_concurrency == true
+      file: reports/{task_area}/CONCURRENCY_ASSUMPTIONS_AUDIT.md
+  not_applicable_proof_required: []
+
+GATE_FULL_PLUS_DOMAIN_ADDENDUM:
+  inherits: GATE_FULL
+  required_always_additional:
+    - reports/{task_area}/DOMAIN_ADDENDUM_{name}.md  # one per addendum
+  note: "All GATE_FULL required_always files plus one proof file per domain addendum listed in GATE_PROFILE_SELECTION.md"

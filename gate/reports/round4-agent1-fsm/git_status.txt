@@ -1,0 +1,9 @@
+ M gui/public/index.html
+?? WATCHER_REPORTS/
+?? gui/client/node_modules/
+?? gui/client/package-lock.json
+?? gui/node_modules/
+?? gui/package-lock.json
+?? gui/test-results/
+?? namespace_store/frontdoor_memory.json
+?? reports/supervisor_mvp/sprint_s_mem_4a/

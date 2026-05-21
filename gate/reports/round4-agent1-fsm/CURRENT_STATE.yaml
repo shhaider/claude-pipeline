@@ -1,0 +1,140 @@
+task_id: "ROUND4-AGENT1-FSM-001"
+task_area: "round4-agent1-fsm"
+gate_run_id: "gate-2026-05-02T12:00:00Z"
+gate_started_at: "2026-05-02T12:00:00Z"
+last_updated_at: "2026-05-02T12:55:00Z"
+
+current_state: PASS_HANDOFF_COMPLETE
+gate_completed: true
+
+gate_profile: GATE_FULL_PLUS_DOMAIN_ADDENDUM
+risk_tier: D2-hot
+domain_addenda: ["model_id_validation"]
+profile_override_required: false
+profile_selection_rationale: "Task modifies LLM provider selection order in front_door_route.js (desired_provider_order), creates callGatewayLLM shim over scribbli_llm_local, and claims live behavior is fixed for provider_used SSE and Alice browser memory test. Hot-file escalation + live-behavior-fixed escalation + model routing change all trigger GATE_FULL. model_id_validation addendum applies because model IDs are hardcoded in shim."
+
+cycle_count: 1
+max_cycles: 5
+
+claims_ledger_path: "reports/round4-agent1-fsm/CLAIMS_LEDGER.yaml"
+evidence_ledger_path: "reports/round4-agent1-fsm/EVIDENCE_LEDGER.yaml"
+package_manifest_path: "reports/round4-agent1-fsm/PACKAGE_MANIFEST.md"
+stale_file_register_path: "reports/round4-agent1-fsm/STALE_FILE_REGISTER.yaml"
+cycle_tracker_path: "reports/round4-agent1-fsm/CYCLE_TRACKER.md"
+
+state_history:
+  - state: GATE_NOT_STARTED
+    entered_at: "2026-05-02T12:00:00Z"
+    exited_at: "2026-05-02T12:00:01Z"
+  - state: CYCLE_TRACKER_INITIALIZED
+    entered_at: "2026-05-02T12:00:01Z"
+    exited_at: "2026-05-02T12:05:00Z"
+  - state: GATE_PROFILE_SELECTED
+    entered_at: "2026-05-02T12:05:00Z"
+    exited_at: "2026-05-02T12:10:00Z"
+  - state: EVIDENCE_ADEQUACY_IN_PROGRESS
+    entered_at: "2026-05-02T12:10:00Z"
+    exited_at: "2026-05-02T12:30:00Z"
+  - state: EVIDENCE_ALREADY_ADEQUATE
+    entered_at: "2026-05-02T12:30:00Z"
+    exited_at: "2026-05-02T12:32:00Z"
+  - state: EVIDENCE_CONSISTENCY_IN_PROGRESS
+    entered_at: "2026-05-02T12:32:00Z"
+    exited_at: "2026-05-02T12:38:00Z"
+  - state: EVIDENCE_CONSISTENCY_PASS
+    entered_at: "2026-05-02T12:38:00Z"
+    exited_at: "2026-05-02T12:40:00Z"
+  - state: ENFORCEMENT_AUDIT_NOT_APPLICABLE
+    entered_at: "2026-05-02T12:40:00Z"
+    exited_at: "2026-05-02T12:41:00Z"
+  - state: PANEL_ENTRY_PASS
+    entered_at: "2026-05-02T12:41:00Z"
+    exited_at: "2026-05-02T12:42:00Z"
+  - state: R1_IN_PROGRESS
+    entered_at: "2026-05-02T12:42:00Z"
+    exited_at: "2026-05-02T12:44:00Z"
+  - state: R2_IN_PROGRESS
+    entered_at: "2026-05-02T12:44:00Z"
+    exited_at: "2026-05-02T12:46:00Z"
+  - state: R3_IN_PROGRESS
+    entered_at: "2026-05-02T12:46:00Z"
+    exited_at: "2026-05-02T12:48:00Z"
+  - state: R4_IN_PROGRESS
+    entered_at: "2026-05-02T12:48:00Z"
+    exited_at: "2026-05-02T12:50:00Z"
+  - state: R5_IN_PROGRESS
+    entered_at: "2026-05-02T12:50:00Z"
+    exited_at: "2026-05-02T12:51:00Z"
+  - state: GATE_VERDICT_PASS
+    entered_at: "2026-05-02T12:51:00Z"
+    exited_at: "2026-05-02T12:52:00Z"
+  - state: FINAL_PACKAGE_AUDIT_IN_PROGRESS
+    entered_at: "2026-05-02T12:52:00Z"
+    exited_at: "2026-05-02T12:53:00Z"
+  - state: FINAL_PACKAGE_AUDIT_PASS
+    entered_at: "2026-05-02T12:53:00Z"
+    exited_at: "2026-05-02T12:54:00Z"
+  - state: CANONICAL_HANDOFF_AUDIT_PASS
+    entered_at: "2026-05-02T12:54:00Z"
+    exited_at: "2026-05-02T12:55:00Z"
+  - state: EXECUTION_CONTEXT_AUDIT_PASS
+    entered_at: "2026-05-02T12:55:00Z"
+    exited_at: "2026-05-02T12:56:00Z"
+  - state: PASS_HANDOFF_COMPLETE
+    entered_at: "2026-05-02T12:56:00Z"
+    exited_at: null
+
+cycles:
+  1:
+    started_at: "2026-05-02T12:05:00Z"
+    completed_at: "2026-05-02T12:56:00Z"
+    evidence_adequacy_decision: EVIDENCE_ALREADY_ADEQUATE
+    consistency_result: PASS
+    consistency_contradictions_found: 0
+    enforcement_audit_applicable: false
+    enforcement_audit_result: NOT_APPLICABLE
+    r1_blocking: 0
+    r1_nonblocking: 0
+    r2_blocking: 0
+    r2_nonblocking: 0
+    r3_blocking: 0
+    r3_nonblocking: 0
+    r4_blocking: 0
+    r4_nonblocking: 0
+    r5_verdict: PASS
+    gate_verdict: PASS
+    blockers_autofix: 0
+    blockers_human_blocked: 0
+    fixes_applied: 0
+    execution_context_audit_applicable: true
+    execution_context_audit_result: PASS
+    prompt_contract_review_result: NOT_APPLICABLE
+    production_caller_audit_result: PASS
+    consumer_api_proof_audit_result: PASS
+    warning_output_audit_result: PASS
+    required_test_set_exactness_result: PASS
+    manifest_finalization_audit_result: PASS
+    migration_runner_proof_result: NOT_APPLICABLE
+    implementer_prompt_lint_result: NOT_APPLICABLE
+    stranded_helper_audit_result: PASS
+    dirty_worktree_recurrence_result: PASS
+    work_allocation_audit_result: PASS
+    export_channel_audit_result: PASS
+    diff_base_scope_audit_result: PASS
+    flake_timeout_audit_result: PASS
+    concurrency_assumptions_audit_result: NOT_APPLICABLE
+    downstream_consumer_readiness_result: PASS
+    next_prompt_decision_result: NOT_APPLICABLE
+    cto_operator_insight_review_result: NOT_APPLICABLE
+    gate_effectiveness_log_result: PASS
+    final_outcome_label: PASS_HANDOFF_COMPLETE
+
+final_package_audit_result: PASS
+canonical_handoff_audit_result: PASS
+execution_context_audit_result: PASS
+
+final_gate_verdict: PASS
+final_r5_verdict: PASS
+handoff_type: PASS_HANDOFF
+handoff_completed_at: "2026-05-02T12:56:00Z"
+remaining_human_blocked_blockers: 0

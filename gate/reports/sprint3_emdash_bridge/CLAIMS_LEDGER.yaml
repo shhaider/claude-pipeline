@@ -1,0 +1,131 @@
+# CLAIMS_LEDGER.yaml
+# Sprint 3 — SimpleAgent emdash Bridge
+# Gate 5.4
+
+task_id: "SPRINT3-EMDASH-BRIDGE"
+task_area: "sprint3_emdash_bridge"
+created_at: "2026-05-03T00:00:00Z"
+last_updated_at: "2026-05-03T00:00:00Z"
+
+claims:
+  - claim_id: C001
+    claim_text: "Bridge tests: 8 passed, 1 skipped (exit 0)"
+    source_document: "HANDOFF.md"
+    source_section: "Test counts"
+    claim_type: HARD_FACT
+    evidence_artifact_id: "E001"
+    evidence_artifact_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/test_output.txt"
+    evidence_in_package: YES
+    package_path_of_evidence: "sprint3_emdash_bridge/test_output.txt"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context:
+      cwd: "/Users/syedhaider/conductor/workspaces/simpleagent/denver"
+      branch: "shhaider/emdash-bridge"
+      git_head: "756a5706ce0ca2a0be4c163a264f1ba109c13235"
+      raw_output_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/test_output.txt"
+      source_of_truth_checked: "test_output.txt EXIT_CODE line"
+      observed_context: "EXIT_CODE: 0"
+      expected_context: "EXIT_CODE:0"
+      context_matches: true
+    notes: "EXIT_CODE: 0 present. 8 passed, 1 skipped confirmed in raw output. HANDOFF says exit 0."
+
+  - claim_id: C002
+    claim_text: "HEAD: 756a5706ce0ca2a0be4c163a264f1ba109c13235"
+    source_document: "HANDOFF.md"
+    source_section: "Base commit (HEAD at handoff)"
+    claim_type: HARD_FACT
+    evidence_artifact_id: "E002"
+    evidence_artifact_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/repo_state.txt"
+    evidence_in_package: YES
+    package_path_of_evidence: "sprint3_emdash_bridge/repo_state.txt"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context:
+      cwd: "/Users/syedhaider/conductor/workspaces/simpleagent/denver"
+      branch: "shhaider/emdash-bridge"
+      git_head: "756a5706ce0ca2a0be4c163a264f1ba109c13235"
+      raw_output_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/repo_state.txt"
+      source_of_truth_checked: "repo_state.txt HEAD line"
+      observed_context: "HEAD: 756a5706ce0ca2a0be4c163a264f1ba109c13235"
+      expected_context: "756a5706ce0ca2a0be4c163a264f1ba109c13235"
+      context_matches: true
+    notes: "repo_state.txt confirms HEAD SHA matches HANDOFF.md claim."
+
+  - claim_id: C003
+    claim_text: "front_door.py modified: +1 import, +3 lines in main()"
+    source_document: "HANDOFF.md"
+    source_section: "Changed files / Modified files"
+    claim_type: HARD_FACT
+    evidence_artifact_id: "E003"
+    evidence_artifact_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/diff.patch"
+    evidence_in_package: YES
+    package_path_of_evidence: "sprint3_emdash_bridge/diff.patch"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context:
+      cwd: null
+      branch: null
+      git_head: null
+      raw_output_path: null
+      source_of_truth_checked: "diff.patch content"
+      observed_context: "+from governed_fsm_conduit.bridge import start_bridge_server at line 29; +3 lines in main() body"
+      expected_context: "+1 import, +3 lines in main()"
+      context_matches: true
+    notes: "diff.patch shows exactly the claimed changes to front_door.py."
+
+  - claim_id: C004
+    claim_text: "Branch: shhaider/emdash-bridge"
+    source_document: "HANDOFF.md"
+    source_section: "Branch"
+    claim_type: HARD_FACT
+    evidence_artifact_id: "E002"
+    evidence_artifact_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/repo_state.txt"
+    evidence_in_package: YES
+    package_path_of_evidence: "sprint3_emdash_bridge/repo_state.txt"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    execution_context:
+      cwd: null
+      branch: "shhaider/emdash-bridge"
+      git_head: null
+      raw_output_path: null
+      source_of_truth_checked: "repo_state.txt BRANCH line"
+      observed_context: "BRANCH: shhaider/emdash-bridge"
+      expected_context: "shhaider/emdash-bridge"
+      context_matches: true
+    notes: "repo_state.txt confirms branch name."
+
+  - claim_id: C005
+    claim_text: "Delivery classification: INFRASTRUCTURE_READY_NOT_WIRED"
+    source_document: "HANDOFF.md"
+    source_section: "Delivery classification"
+    claim_type: INTERPRETATION
+    evidence_artifact_id: "E004"
+    evidence_artifact_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/gate/ENFORCEMENT_AUTHORITY_AUDIT.md"
+    evidence_in_package: YES
+    package_path_of_evidence: "sprint3_emdash_bridge/gate/ENFORCEMENT_AUTHORITY_AUDIT.md"
+    verification_result: VERIFIED
+    hard_fact_verified: null
+    execution_context:
+      cwd: null
+      branch: null
+      git_head: null
+      raw_output_path: null
+      source_of_truth_checked: "ENFORCEMENT_AUTHORITY_AUDIT.md enforcement verdict"
+      observed_context: "Verdict: PARTIAL — primary provisionTask.ts path governed, createTask bypass documented"
+      expected_context: "INFRASTRUCTURE_READY_NOT_WIRED consistent with PARTIAL enforcement"
+      context_matches: true
+    notes: "INFRASTRUCTURE_READY_NOT_WIRED is the correct label given PARTIAL enforcement and no live e2e proof."
+
+# ── Summary (filled by 15_FINAL_PACKAGE_AUDIT.md) ────────────────────────────
+summary:
+  total_claims: 5
+  hard_fact_claims: 4
+  hard_fact_verified: 4
+  hard_fact_failed: 0
+  source_missing: 0
+  not_in_package: 0
+  local_path_only: 0
+  source_contradicts: 0
+  audit_verdict: PASS

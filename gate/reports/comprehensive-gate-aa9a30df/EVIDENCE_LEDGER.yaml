@@ -1,0 +1,74 @@
+# EVIDENCE_LEDGER.yaml template
+# Copy to reports/<task_area>/EVIDENCE_LEDGER.yaml at CYCLE_TRACKER_INITIALIZED.
+# An evidence artifact is any file used to support a claim: test logs, diffs,
+# snapshots, git logs, command output files, manifests, RTMs.
+# Add one entry per artifact as it is created or referenced.
+# Gate step 15_FINAL_PACKAGE_AUDIT.md verifies every artifact in this ledger.
+
+task_id: "GATE-aa9a30df"
+task_area: "GATE-aa9a30df"
+created_at: "2026-05-07T17:56:28Z"
+last_updated_at: "2026-05-07T17:56:28Z"
+
+artifacts:
+  - artifact_id: E001
+    artifact_path: "[Full path to artifact on disk]"
+    artifact_filename: "[Filename only, e.g. e2e_v2_output.log]"
+
+    # Artifact type
+    # TEST_LOG | DIFF | SNAPSHOT | MANIFEST | GIT_LOG | COMMAND_OUTPUT
+    # RTM | COVERAGE_REPORT | PACKAGE_LISTING | ENFORCEMENT_PROOF | OTHER
+    # raw_test_output — Gate 5.1: use this type for any file that is the direct
+    #   output of a test runner command (jest, pytest, npm test, etc.) and will be
+    #   subjected to EXIT_CODE validation and post-PASS error scanning.
+    #   Required fields when artifact_type == raw_test_output:
+    #     - created_by_command: the exact test command that produced this file
+    #     - included_in_package: YES (raw outputs must be in the package)
+    artifact_type: TEST_LOG
+
+    # Creation metadata
+    created_at: "[ISO-8601 when this artifact was generated]"
+    created_by_command: "[Exact command that produced this artifact]"
+    cycle: 1    # Which gate cycle produced this artifact
+
+    # Disk presence (filled at ledger entry time)
+    exists_on_disk: null          # true | false
+
+    # Package inclusion (filled by 15_FINAL_PACKAGE_AUDIT.md)
+    # YES: included in the zip/package
+    # NO: not included
+    # NOT_APPLICABLE: this artifact is not meant to be in the package
+    included_in_package: null
+    package_path: null            # Path within zip where this artifact lives
+    verified_in_package: null     # true | false | null
+
+    # Hash for integrity
+    sha256: null                  # hex string, filled after artifact is written
+
+    # Staleness
+    stale: false
+    stale_reason: null            # e.g., "superseded by cycle 2 version"
+    superseded_by: null           # artifact_id of the replacement
+
+    # Claims that reference this artifact
+    referenced_by_claims: []      # List of claim_ids from CLAIMS_LEDGER.yaml
+
+    # Execution context (fill for any artifact produced by a context-sensitive command)
+    execution_context:
+      cwd: null                           # working directory when command ran
+      branch: null                        # git branch --show-current output
+      git_head: null                      # git rev-parse HEAD output
+      package_sha256: null                # sha256 of the package if artifact is package-derived
+      generated_from_actual_package: null # true | false (not from local /Users/ path)
+
+    notes: ""
+
+# ── Summary (filled by 15_FINAL_PACKAGE_AUDIT.md) ────────────────────────────
+summary:
+  total_artifacts: 0
+  exist_on_disk: 0
+  missing_from_disk: 0
+  included_in_package: 0
+  missing_from_package: 0
+  stale_artifacts: 0
+  audit_verdict: null      # PASS | FAIL

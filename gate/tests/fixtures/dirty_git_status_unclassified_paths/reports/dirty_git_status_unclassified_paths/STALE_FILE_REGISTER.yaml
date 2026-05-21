@@ -1,0 +1,3 @@
+task_id: "fixture-happy-path"
+task_area: "happy_path_gate_full"
+stale_files: []

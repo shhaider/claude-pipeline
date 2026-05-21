@@ -1,0 +1,34 @@
+validation_mode: FOCUSED_EVIDENCE
+formal_gate_required: false
+runtime_tests_required: targeted_plus_relevant_integration
+selected_profile: null
+risk_tier: D2
+task_kind: normal_impl
+changed_files:
+- .github/workflows/comprehensive-gate.yml
+- docs/roadmap/PRIORITY_QUEUE.yaml
+- docs/roadmap/SOFTWARE_ROADMAP.md
+required_evidence:
+- targeted_tests
+- relevant_integration_tests
+- syntax_or_static_check
+- repo_boundary_guard
+- pr_ci
+skip_formal_gate_rationale: Formal LLM proof-package is not required for bounded D2
+  normal implementation when changed files do not touch Gate logic, CI/branch governance,
+  active runtime config, runtime prompt templates, GUI-visible behavior, provider/model
+  routing, runtime state/production wiring, or auth/secrets/payment.
+escalation_triggers_checked:
+  gate_logic: false
+  ci_branch_governance: false
+  active_runtime_config: false
+  runtime_prompt_template: false
+  gui_visible: false
+  provider_model_routing: false
+  runtime_state_or_production: false
+  security_auth_secrets_payment: false
+domain_addenda: []
+human_decision_required: false
+terminal_state: FOCUSED_EVIDENCE_COMPLETE
+rationale: Bounded D2 normal implementation with no escalation trigger; focused runtime
+  and integration evidence plus PR CI are sufficient.

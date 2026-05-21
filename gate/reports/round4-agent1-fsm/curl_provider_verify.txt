@@ -1,0 +1,5 @@
+=== BRANCH ===
+agentostest-fsm
+
+=== CURL provider_used VERIFY ===
+data: {"type":"provider_used","content":{"provider":"anthropic","model":"claude-sonnet-4-6"}}

@@ -1,0 +1,10 @@
+=== BRANCH ===
+agentostest-fsm
+
+=== SHIM LOAD TEST ===
+call_gateway_shim: ok
+newsroom_config_shim: ok
+run_research_phase: ok
+outline_runners: ok
+draft_runners: ok
+EXIT_CODE:0

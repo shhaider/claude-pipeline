@@ -1,0 +1,2 @@
+ M kills/newsroom/gui/client/src/components/AppShell.vue
+?? sprints/gui-pipeline-ui-2026-05-01/

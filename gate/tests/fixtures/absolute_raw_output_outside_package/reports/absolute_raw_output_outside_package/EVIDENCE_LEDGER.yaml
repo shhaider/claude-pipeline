@@ -1,0 +1,38 @@
+task_id: "fixture-absolute-raw-output-outside-package"
+task_area: "absolute_raw_output_outside_package"
+created_at: "2026-05-01T00:00:00Z"
+last_updated_at: "2026-05-01T00:00:00Z"
+
+artifacts:
+  - artifact_id: E001
+    artifact_path: "/tmp/some_raw_output_that_does_not_exist_in_package.txt"
+    artifact_filename: "some_raw_output_that_does_not_exist_in_package.txt"
+    artifact_type: raw_test_output
+    created_at: "2026-05-01T00:00:00Z"
+    created_by_command: "npx jest 2>&1 | tee /tmp/some_raw_output_that_does_not_exist_in_package.txt; echo EXIT_CODE:$? >> /tmp/some_raw_output_that_does_not_exist_in_package.txt"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: NO
+    package_path: null
+    verified_in_package: false
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: [C001]
+    execution_context:
+      cwd: "/repo"
+      branch: "dev"
+      git_head: "abc123def456"
+      package_sha256: null
+      generated_from_actual_package: true
+    notes: "Bad-fixture: raw output declared with an absolute host path and no in-package copy."
+
+summary:
+  total_artifacts: 1
+  exist_on_disk: 1
+  missing_from_disk: 0
+  included_in_package: 0
+  missing_from_package: 1
+  stale_artifacts: 0
+  audit_verdict: PASS

@@ -1,0 +1,60 @@
+diff --git a/gui/routes/front_door_route.js b/gui/routes/front_door_route.js
+index b169f64..2b36ac4 100644
+--- a/gui/routes/front_door_route.js
++++ b/gui/routes/front_door_route.js
+@@ -343,35 +343,76 @@ async function dispatchSoftwareTask(message, sessionId, res) {
+   sseWrite(res, 'fsm_state', { state: 'S02', label: FSM_STATE_LABELS['S02'], sprint_id: sprintId });
+   sseWrite(res, 'text', `**[S02]** ${FSM_STATE_LABELS['S02']} — complexity: ${complexity}\n`);
+ 
+-  // Try spawning front_door.py --once for deeper processing (background, non-blocking)
++  // Call front_door.py --once to generate actual code via LLM
+   const frontDoorPy = path.join(repoRoot, 'front_door.py');
+   const python3 = process.env.PYTHON3_BIN || 'python3';
+ 
+-  try {
+-    if (fs.existsSync(frontDoorPy)) {
++  sseWrite(res, 'fsm_state', { state: 'S06', label: FSM_STATE_LABELS['S06'], sprint_id: sprintId });
++  sseWrite(res, 'text', `**[S06]** ${FSM_STATE_LABELS['S06']}\nCalling LLM to generate code...\n`);
++
++  let implResult = null;
++  if (fs.existsSync(frontDoorPy)) {
++    await new Promise((resolve) => {
+       const child = spawn(python3, [frontDoorPy, '--once', message], {
+         cwd: repoRoot,
+         env: { ...process.env, PYTHONPATH: repoRoot, SPRINT_ID: sprintId },
+-        detached: true,
+         stdio: ['ignore', 'pipe', 'pipe'],
+       });
+ 
+-      let output = '';
+-      child.stdout.on('data', (chunk) => { output += chunk.toString(); });
+-      child.stderr.on('data', (chunk) => { output += '[stderr] ' + chunk.toString(); });
++      let stdout = '';
++      let stderr = '';
+ 
+-      setTimeout(() => {
+-        if (output) {
+-          try {
+-            fs.writeFileSync(path.join(sprintDir, 'FRONT_DOOR_OUTPUT.txt'), output);
+-          } catch (_) {}
++      child.stdout.on('data', (chunk) => {
++        const text = chunk.toString();
++        stdout += text;
++        // Stream any [IMPL] log lines back as SSE
++        for (const line of text.split('\n')) {
++          if (line.startsWith('[IMPL]')) {
++            sseWrite(res, 'text', line + '\n');
++          }
+         }
+-      }, 3000);
++      });
++      child.stderr.on('data', (chunk) => { stderr += chunk.toString(); });
+ 
+-      child.unref();
+-    }
+-  } catch (err) {
+-    console.warn('[FRONT_DOOR] front_door.py spawn failed:', err.message);
++      const timer = setTimeout(() => {
++        child.kill('SIGTERM');
++        sseWrite(res, 'text', '\nLLM implementation timed out after 90s.\n');
++        resolve();

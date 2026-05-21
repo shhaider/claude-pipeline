@@ -1,0 +1,88 @@
+# STALE_FILE_REGISTER.yaml
+# Sprint 3 — SimpleAgent emdash Bridge
+# Gate 5.4
+
+task_id: "SPRINT3-EMDASH-BRIDGE"
+task_area: "sprint3_emdash_bridge"
+created_at: "2026-05-03T00:00:00Z"
+last_updated_at: "2026-05-03T00:00:00Z"
+
+stale_files:
+  - file_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/gate/COLD_REVIEW_ADJUDICATION.md"
+    filename: "COLD_REVIEW_ADJUDICATION.md (ad-hoc cycle 0)"
+    classification: HISTORICAL_PRIOR_CYCLE
+    became_stale_at: "2026-05-03T00:00:00Z"
+    became_stale_reason: "Produced during ad-hoc review cycle 0 prior to Gate 5.4 formal run; superseded by this gate's COLD_REVIEW_ADJUDICATION.md"
+    cycle_produced: 0
+    superseded_by: "reports/sprint3_emdash_bridge/COLD_REVIEW_ADJUDICATION.md"
+    banner_added: false
+    banner_added_at: null
+    include_in_package: true
+    package_location: "sprint3_emdash_bridge/gate/prior_cycle0/COLD_REVIEW_ADJUDICATION.md"
+
+  - file_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/gate/COLD_REVIEW_REQUIREMENTS_AUDIT.md"
+    filename: "COLD_REVIEW_REQUIREMENTS_AUDIT.md (ad-hoc cycle 0)"
+    classification: HISTORICAL_PRIOR_CYCLE
+    became_stale_at: "2026-05-03T00:00:00Z"
+    became_stale_reason: "Produced during ad-hoc review cycle 0; superseded by formal Gate 5.4 run"
+    cycle_produced: 0
+    superseded_by: "reports/sprint3_emdash_bridge/COLD_REVIEW_REQUIREMENTS_AUDIT.md"
+    banner_added: false
+    banner_added_at: null
+    include_in_package: true
+    package_location: "sprint3_emdash_bridge/gate/prior_cycle0/COLD_REVIEW_REQUIREMENTS_AUDIT.md"
+
+  - file_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/gate/COLD_REVIEW_ACTIVE_PROOF_AUDIT.md"
+    filename: "COLD_REVIEW_ACTIVE_PROOF_AUDIT.md (ad-hoc cycle 0)"
+    classification: HISTORICAL_PRIOR_CYCLE
+    became_stale_at: "2026-05-03T00:00:00Z"
+    became_stale_reason: "Produced during ad-hoc review cycle 0; superseded by formal Gate 5.4 run"
+    cycle_produced: 0
+    superseded_by: "reports/sprint3_emdash_bridge/COLD_REVIEW_ACTIVE_PROOF_AUDIT.md"
+    banner_added: false
+    banner_added_at: null
+    include_in_package: true
+    package_location: "sprint3_emdash_bridge/gate/prior_cycle0/COLD_REVIEW_ACTIVE_PROOF_AUDIT.md"
+
+  - file_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/gate/COLD_REVIEW_AI_FAILURE_PATTERN_AUDIT.md"
+    filename: "COLD_REVIEW_AI_FAILURE_PATTERN_AUDIT.md (ad-hoc cycle 0)"
+    classification: HISTORICAL_PRIOR_CYCLE
+    became_stale_at: "2026-05-03T00:00:00Z"
+    became_stale_reason: "Produced during ad-hoc review cycle 0; superseded by formal Gate 5.4 run"
+    cycle_produced: 0
+    superseded_by: "reports/sprint3_emdash_bridge/COLD_REVIEW_AI_FAILURE_PATTERN_AUDIT.md"
+    banner_added: false
+    banner_added_at: null
+    include_in_package: true
+    package_location: "sprint3_emdash_bridge/gate/prior_cycle0/COLD_REVIEW_AI_FAILURE_PATTERN_AUDIT.md"
+
+  - file_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/gate/COLD_REVIEW_HANDOFF_COMPLETENESS_AUDIT.md"
+    filename: "COLD_REVIEW_HANDOFF_COMPLETENESS_AUDIT.md (ad-hoc cycle 0)"
+    classification: HISTORICAL_PRIOR_CYCLE
+    became_stale_at: "2026-05-03T00:00:00Z"
+    became_stale_reason: "Produced during ad-hoc review cycle 0; superseded by formal Gate 5.4 run"
+    cycle_produced: 0
+    superseded_by: "reports/sprint3_emdash_bridge/COLD_REVIEW_HANDOFF_COMPLETENESS_AUDIT.md"
+    banner_added: false
+    banner_added_at: null
+    include_in_package: true
+    package_location: "sprint3_emdash_bridge/gate/prior_cycle0/COLD_REVIEW_HANDOFF_COMPLETENESS_AUDIT.md"
+
+  - file_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/gate/EVIDENCE_ADEQUACY_ASSESSMENT.md"
+    filename: "EVIDENCE_ADEQUACY_ASSESSMENT.md (ad-hoc cycle 0)"
+    classification: HISTORICAL_PRIOR_CYCLE
+    became_stale_at: "2026-05-03T00:00:00Z"
+    became_stale_reason: "Produced during ad-hoc review cycle 0; superseded by formal Gate 5.4 run"
+    cycle_produced: 0
+    superseded_by: "reports/sprint3_emdash_bridge/EVIDENCE_ADEQUACY_ASSESSMENT.md"
+    banner_added: false
+    banner_added_at: null
+    include_in_package: true
+    package_location: "sprint3_emdash_bridge/gate/prior_cycle0/EVIDENCE_ADEQUACY_ASSESSMENT.md"
+
+# ── Summary (filled by 16_CANONICAL_HANDOFF_AUDIT.md) ────────────────────────
+summary:
+  total_stale_files: 6
+  banners_added: 0
+  banners_missing: 6
+  audit_verdict: null

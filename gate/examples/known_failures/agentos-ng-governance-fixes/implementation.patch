@@ -1,0 +1,199 @@
+--- /dev/null (before state — agentos_ng.py had no INTEGRATION_BRANCH, no _ensure_integration_branch, no _cherry_pick_to_main, no false completion check, no cherry-pick in cmd_merge)
++++ b/agentos_ng.py (after — all governance fixes applied)
+
+NOTE: This is a structured patch extracted from CHANGE_MANIFEST.md because the
+implementation files are untracked by the .codex git repository. A machine-applicable
+`git diff` cannot be generated. The sections below represent each addition/change,
+marked with + for added lines, using the exact line content from the source file.
+
+================================================================
+CHANGE 1 — agentos_ng.py:37 — New constant INTEGRATION_BRANCH
+================================================================
+@@ -36,0 +37 @@
++INTEGRATION_BRANCH = "agentos-ng-integration"
+
+================================================================
+CHANGE 2 — agentos_ng.py:1456-1475 — New function _ensure_integration_branch
+(inserted after _extract_task_commit_sha function)
+================================================================
+@@ -1454,0 +1456,20 @@
++
++def _ensure_integration_branch(root: Path) -> bool:
++    """Switch to integration branch, creating it from main if needed.
++    Returns True on success."""
++    rc_cur, current, _ = run_cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=root)
++    current = current.strip() if rc_cur == 0 else ""
++    if current == INTEGRATION_BRANCH:
++        return True
++    # Create branch from main if it doesn't exist
++    rc_ver, _, _ = run_cmd(["git", "rev-parse", "--verify", INTEGRATION_BRANCH], cwd=root)
++    if rc_ver != 0:
++        rc_br, _, err_br = run_cmd(["git", "branch", INTEGRATION_BRANCH, "main"], cwd=root)
++        if rc_br != 0:
++            print(f"[integration] failed to create {INTEGRATION_BRANCH}: {err_br}", file=sys.stderr)
++            return False
++    rc_co, _, err_co = run_cmd(["git", "checkout", INTEGRATION_BRANCH], cwd=root)
++    if rc_co != 0:
++        print(f"[integration] failed to checkout {INTEGRATION_BRANCH}: {err_co}", file=sys.stderr)
++        return False
++    print(f"[integration] switched to {INTEGRATION_BRANCH}")
++    return True
+
+================================================================
+CHANGE 3 — agentos_ng.py:1478-1497 — New function _cherry_pick_to_main
+(inserted after _ensure_integration_branch)
+================================================================
+@@ -1475,0 +1478,20 @@
++
++def _cherry_pick_to_main(task_sha: str, task_id: str, root: Path) -> int:
++    """Cherry-pick a specific commit from integration branch to main.
++    Switches to main, cherry-picks, then switches back to INTEGRATION_BRANCH.
++    Returns 0 on success, non-zero on failure."""
++    rc_co, _, err_co = run_cmd(["git", "checkout", "main"], cwd=root)
++    if rc_co != 0:
++        print(f"[merge] cannot checkout main: {err_co}", file=sys.stderr)
++        return rc_co
++    rc_cp, out_cp, err_cp = run_cmd(
++        ["git", "cherry-pick", "--no-ff", task_sha,
++         "-m", f"[agentos-ng] {task_id} promoted to main"],
++        cwd=root,
++    )
++    if rc_cp != 0:
++        print(f"[merge] cherry-pick failed: {err_cp}", file=sys.stderr)
++        # abort any in-progress cherry-pick
++        run_cmd(["git", "cherry-pick", "--abort"], cwd=root)
++    # Always switch back to integration
++    run_cmd(["git", "checkout", INTEGRATION_BRANCH], cwd=root)
++    return rc_cp
+
+================================================================
+CHANGE 4 — agentos_ng.py:1711-1730 — cmd_merge: cherry-pick block (UPDATED IN CYCLE 2)
+Original WARNING+continue changed to _block() for BLOCKER-SPLITBRAIN fix
+================================================================
+@@ -1710,0 +1712,21 @@
++    # Promote to main via cherry-pick — AgentOS-NG is the only path to main
++    task_sha = _extract_task_commit_sha(task_id, root)
++    if task_sha:
++        rc_cp = _cherry_pick_to_main(task_sha, task_id, root)
++        if rc_cp != 0:
++            return _block(
++                f"BLOCKED — cherry-pick of {task_sha[:8]} to main failed. "
++                f"Resolve conflicts then retry."
++            )
++        _, head_main, _ = run_cmd(["git", "rev-parse", "main"], cwd=root)
++        print(f"[merge] promoted to main: {head_main.strip()[:12]}")
++    else:
++        return _block(
++            f"BLOCKED — could not extract task commit SHA for {task_id}. "
++            f"Cherry-pick to main cannot proceed without a confirmed task commit. "
++            f"Ensure ORCH proof data is populated (requires real agent run, not simulation)."
++        )
++
+ (existing: Approve via ORCH to move task to done)
+
+================================================================
+CHANGE 5 — agentos_ng.py:1251-1263 — cmd_validate: false completion check
+================================================================
+@@ -1250,0 +1251,13 @@
++    # False completion check: fail if no files changed but expected changes are non-empty
++    expected_changed_paths = packet.get("expected_changed_paths", []) or []
++    if expected_changed_paths and not changed_files:
++        scope_violations.append(
++            f"empty diff: 0 files changed but expected_changed_paths lists "
++            f"{len(expected_changed_paths)} file(s): {expected_changed_paths}"
++        )
++        scope_ok = False
++        print(
++            f"[validate] FAIL: empty diff — expected changes in {expected_changed_paths} "
++            f"but no files were changed. Task appears to be a false completion.",
++            file=sys.stderr,
++        )
+
+================================================================
+CHANGE 6 — _run_mco_review: diff-base selection logic (conceptual diff)
+================================================================
+Previous behavior: diff_base selected via worktree_live flag only, defaulting to HEAD~1
+New behavior: commit_sha preferred (when available from ORCH proof data), falling back to worktree, then HEAD~1
+
+================================================================
+CHANGES 7-8 — classifier.py:744-812 — producer-before-consumer check
+================================================================
+@@ -742,0 +744,29 @@
++        # Producer-before-consumer check: if this task consumes a contract, its producer
++        # must already be in selected before we allow the consumer.
++        consumes = pkt.get("consumes_contracts") or []
++        producer_blocked = False
++        for contract in consumes:
++            # Find any packet that produces this contract
++            for other_pkt in todo_packets:
++                other_id = other_pkt.get("id", "")
++                if other_id == task_id:
++                    continue
++                if contract in (other_pkt.get("produces_contracts") or []):
++                    # A producer exists — it must be in selected already
++                    if other_id not in selected:
++                        exclusion_reasons[task_id] = (
++                            f"producer {other_id} must be selected/completed before consumer {task_id}"
++                        )
++                        producer_blocked = True
++                    break  # Only need to find one producer per contract
++            if producer_blocked:
++                break
++
++        if producer_blocked:
++            excluded.append(task_id)
++            continue
+
+@@ -795,0 +797,6 @@
++    waiting_on_producer = [
++        tid for tid, reason in exclusion_reasons.items()
++        if "must be selected/completed before consumer" in reason
++    ]
+
+@@ -800 +805 @@
+     return {
+         "timestamp": ...,
+         ...
++        "waiting_on_producer": waiting_on_producer,
+     }
+
+================================================================
+CHANGE 9 — agentos_ng.py:1486-1497 — Fix _cherry_pick_to_main() -m flag bug (Cycle 3)
+================================================================
+Bug: `git cherry-pick --no-ff <sha> -m <message>` — git treats `-m` as `--mainline`
+(expects an integer). Causes "option 'mainline' expects a number greater than zero".
+Found during Cycle 3 live-path demonstration.
+
+@@ -1486,5 +1486,8 @@
+-    rc_cp, out_cp, err_cp = run_cmd(
+-        ["git", "cherry-pick", "--no-ff", task_sha,
+-         "-m", f"[agentos-ng] {task_id} promoted to main"],
+-        cwd=root,
+-    )
++    rc_cp, out_cp, err_cp = run_cmd(
++        ["git", "cherry-pick", "--no-commit", task_sha],
++        cwd=root,
++    )
++    if rc_cp == 0:
++        rc_cp, out_cp, err_cp = run_cmd(
++            ["git", "commit", "-m", f"[agentos-ng] {task_id} promoted to main"],
++            cwd=root,
++        )
+
+Live proof: agentos-ng merge tsk__79EIht output:
+  [merge] promoted to main: 1ccb8f3d98e3
+  ✓ Approved tsk__79EIht
+  MERGED — task tsk__79EIht approved and merged.
+
+git log main AFTER:
+  1ccb8f3 [agentos-ng] tsk__79EIht promoted to main
+  63008fe Initial commit — cherry-pick proof project
+
+================================================================
+PATCH PROVENANCE
+================================================================
+Generated: 2026-04-30 (Cycle 3 — BLOCKER-CHERRY-C2 resolution + BLOCKER-CHERRY-BUG fix)
+Method: Extracted from CHANGE_MANIFEST.md (all 8 changes) + Cycle 2 SPLITBRAIN fix + Cycle 3 cherry-pick bug fix
+Source files: /Users/syedhaider/.codex/agentos_ng/agentos_ng.py (2082 lines after Cycle 3 fix), classifier.py (857 lines)
+Note: This is a structured human-readable patch. Machine application via `git apply` is not possible (no before-state).
+Behavioral verification: E2E v2 acceptance tests (all 5 blockers PASS) + 17/17 classifier unit tests (EXIT_CODE:0) + live cherry-pick path demonstrated (LIVE_CHERRY_PICK_PROOF.md).

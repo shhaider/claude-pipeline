@@ -1,0 +1,1642 @@
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/15_FINAL_PACKAGE_AUDIT.md /Users/syedhaider/Downloads/gate/15_FINAL_PACKAGE_AUDIT.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/15_FINAL_PACKAGE_AUDIT.md	2026-05-01 14:50:59
++++ /Users/syedhaider/Downloads/gate/15_FINAL_PACKAGE_AUDIT.md	2026-05-01 17:26:57
+@@ -324,3 +324,70 @@
+ [ ] check_gate_package.py exits 0 (required for Gate Full; recommended for Gate Standard)
+ [ ] GATE_PACKAGE_VALIDATION_REPORT.md included in package (Gate Full — skip on first run to avoid circular dependency)
+ ```
++
++---
++
++## Gate 5.2-R1 — Output-Contract structured verdict (append)
++
++`OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md` SHOULD include a fenced YAML block declaring the
++audit verdict in machine-readable form. The Gate 5.2-R1 checker prefers the structured
++block to avoid prose-scan false positives like "no STALE_MILESTONE_LABEL".
++
++Required structured block format:
++
++````markdown
++```yaml
++output_contract_consistency:
++  verdict: PASS  # or FAIL or UNCERTAIN
++  blocking_findings: []  # list of blocking-token strings, empty if verdict=PASS
++  checked_surfaces:
++    - HANDOFF
++    - RUNTIME_SCOPE_CHECK
++    - RTM
++    - MANIFEST
++    - source snapshots
++    - tests
++    - diff
++```
++````
++
++Checker behavior:
++- `verdict: PASS` with empty `blocking_findings` → PASS.
++- `verdict: PASS` with non-empty `blocking_findings` → FAIL with
++  `OUTPUT_CONTRACT_VERDICT_INCONSISTENT`.
++- `verdict: FAIL` or `verdict: UNCERTAIN` → FAIL with the first listed blocking-finding
++  token (or `STALE_MILESTONE_LABEL` if none specified).
++- No structured block found → fall back to negation-aware prose scan.
++
++See `OUTPUT_CONTRACT_CONSISTENCY_AUDIT_TEMPLATE.md` for a copyable example.
++
++---
++
++## Gate 5.2-R1 — Host-path leakage check (append)
++
++For every artifact in `EVIDENCE_LEDGER.yaml` with `artifact_type: raw_test_output`:
++- The declared path MUST resolve under the package root.
++- An absolute host path (e.g. `/tmp/...`) is permitted ONLY as a `provenance_host_path:`
++  field paired with a sibling `package_relative_path:` whose target file exists in the
++  package. Both fields must be present.
++
++If the absolute path resolves outside the package and there is no sibling package-relative
++copy, the checker fires `HOST_PATH_NOT_PACKAGE_EVIDENCE` and blocks PASS.
++
++---
++
++## Gate 5.2-R1 — Mandatory profile metadata (append)
++
++`GATE_PROFILE_SELECTION.md` must contain `selected_profile`/`gate_profile`, `risk_tier`,
++`task_kind`, and a non-empty `reason`/`profile_selection_rationale` regardless of profile.
++Missing fields fire `MISSING_RISK_TIER`, `MISSING_TASK_KIND`, and
++`MISSING_PROFILE_REASON`.
++
++---
++
++## Gate 5.2-R1 — NOT_APPLICABLE proof hard requirement (append)
++
++Every state listed in the selected profile's `not_applicable_proof_required:` array must
++have an exact file at `reports/<task_area>/<STATE>_NOT_APPLICABLE.md` with a substantive
++reason. Empty or template-only files fire `NOT_APPLICABLE_REASON_MISSING`. Missing files
++fire `MISSING_NOT_APPLICABLE_PROOF`. See `PROOF_FILE_REQUIREMENTS.md` for the full rule.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/16_CANONICAL_HANDOFF_AUDIT.md /Users/syedhaider/Downloads/gate/16_CANONICAL_HANDOFF_AUDIT.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/16_CANONICAL_HANDOFF_AUDIT.md	2026-05-01 14:50:41
++++ /Users/syedhaider/Downloads/gate/16_CANONICAL_HANDOFF_AUDIT.md	2026-05-01 17:27:07
+@@ -204,3 +204,32 @@
+ If the handoff says `LIVE_BEHAVIOR_FIXED` but the Production Caller Audit found no production caller: **blocker** — label must be `INFRASTRUCTURE_READY_NOT_WIRED` or `TEST_HELPER_ONLY`.
+ 
+ If the handoff says `MERGE_VERIFIED` but no `git log` proof of merge is in the package: **blocker** — must be `MERGE_NOT_VERIFIED`.
++
++---
++
++## Gate 5.2-R1 — Output-Contract structured verdict reference (append)
++
++The canonical-handoff audit relies on `OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md` to detect
++cross-surface label drift. Under Gate 5.2-R1, that audit should declare its verdict in a
++fenced YAML block:
++
++````markdown
++```yaml
++output_contract_consistency:
++  verdict: PASS  # or FAIL or UNCERTAIN
++  blocking_findings: []
++  checked_surfaces:
++    - HANDOFF
++    - RUNTIME_SCOPE_CHECK
++    - RTM
++    - MANIFEST
++    - source snapshots
++    - tests
++    - diff
++```
++````
++
++The structured form lets the checker accept negated prose like "No STALE_MILESTONE_LABEL
++found" without firing a false-positive token detection. See
++`OUTPUT_CONTRACT_CONSISTENCY_AUDIT_TEMPLATE.md` for the copyable template and
++`15_FINAL_PACKAGE_AUDIT.md` for the full Gate 5.2-R1 enforcement spec.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/DIRTY_WORKTREE_RECURRENCE_TEMPLATE.md /Users/syedhaider/Downloads/gate/DIRTY_WORKTREE_RECURRENCE_TEMPLATE.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/DIRTY_WORKTREE_RECURRENCE_TEMPLATE.md	2026-05-01 11:22:41
++++ /Users/syedhaider/Downloads/gate/DIRTY_WORKTREE_RECURRENCE_TEMPLATE.md	2026-05-01 17:26:29
+@@ -9,6 +9,38 @@
+ 
+ Tracks every path that has appeared as uncommitted/untracked across gate runs. When a path appears twice, a hygiene task must be created to permanently resolve it.
+ 
++## Gate 5.2-R1 approved classification labels
++
++Every dirty path from `git_status_final.txt` MUST be classified with one of these labels.
++Unclassified paths fire `DIRTY_PATH_NOT_CLASSIFIED`. The label `UNKNOWN_REQUIRES_HUMAN`
++fires `UNKNOWN_REQUIRES_HUMAN_BLOCKER` (intentional escape hatch — the gate must surface
++the row for human review rather than auto-pass).
++
++| Label | Use when |
++|---|---|
++| `UNRELATED_EXTERNAL_WORK` | Path belongs to another repo or external scratch area unrelated to this task |
++| `ACTIVE_PARALLEL_WORK_DO_NOT_TOUCH` | A concurrent agent or sprint is actively editing this path under a tracked sprint folder; this lane must not touch it |
++| `AMBIENT_UNRELATED_DOC_COMMIT` | Doc-only commit (e.g. CHANGELOG entry) committed alongside but unrelated to the audited change |
++| `UNRELATED_EXTERNAL_CHANGE_NEEDS_HUMAN` | External change unrelated to this task that must be reviewed by a human before merge but does not block this gate |
++| `UNKNOWN_REQUIRES_HUMAN` | Agent could not determine origin/scope of this dirty path; gate MUST block until human classifies |
++
++Always-blocking paths (regardless of label):
++
++- `node_modules/`
++- `.run_artifacts/`
++- `raw_test_output*` / `raw_outputs/`
++- `DOC_FRESHNESS_REPORT.md` (generated, do not commit)
++- Any path that is task-relevant (matches files in this task's diff)
++
++## Example multi-row classification
++
++| Path | Label | Reason |
++|---|---|---|
++| kills/newsroom/gui/client/src/components/AppShell.vue | ACTIVE_PARALLEL_WORK_DO_NOT_TOUCH | GUI sprint gui-pipeline-ui-2026-05-01 is actively editing this file |
++| docs/changelog/CHANGELOG_2026-04-30.md | AMBIENT_UNRELATED_DOC_COMMIT | Doc-only changelog entry; unrelated to merge under audit |
++| ../external-scratch/notes.md | UNRELATED_EXTERNAL_WORK | Belongs to operator's external scratch repo |
++| scripts/research/forgotten.dat | UNKNOWN_REQUIRES_HUMAN | Origin unclear; needs human inspection before gate can pass |
++
+ ---
+ 
+ ## Recurrence register
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/GATE_5_2_USAGE_RULE.md /Users/syedhaider/Downloads/gate/GATE_5_2_USAGE_RULE.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/GATE_5_2_USAGE_RULE.md	2026-05-01 16:06:50
++++ /Users/syedhaider/Downloads/gate/GATE_5_2_USAGE_RULE.md	2026-05-01 17:25:51
+@@ -1,11 +1,31 @@
+ # Gate 5.2 — Standing Usage Rule
+ 
+-**Status:** Active as of 2026-05-01
++**Status:** Active as of 2026-05-01 (Gate 5.2-R1 hardening pass applied)
+ **Authority:** Independent gate auditor, P04 of Gate 5.2 acceptance audit
+ **Supersedes:** `GATE_5_1_USAGE_RULE.md` (preserved at `/Users/syedhaider/Downloads/gate/GATE_5_1_USAGE_RULE.md` for reference)
+ 
+ Gate 5.2 preserves all Gate 5.1 behavior and adds executable enforcement for previously prose-only rules. Anything `tools/check_gate_package.py` accepted as PASS under 5.1 still PASSes under 5.2 (verified against the Lane D production package).
+ 
++## Gate 5.2-R1 hardening summary
++
++The R1 pass adds five blocking enforcements that were missing or advisory in 5.2.0:
++
++1. **Host-path leakage** — every `raw_test_output` artifact must resolve INSIDE the
++   exported package. Absolute host paths (e.g. `/tmp/...`) without a sibling
++   `package_relative_path` fire `HOST_PATH_NOT_PACKAGE_EVIDENCE`.
++2. **Profile metadata for ALL profiles** — `risk_tier`, `task_kind`, and a rationale are
++   now mandatory in every `GATE_PROFILE_SELECTION.md`, including `GATE_LITE`.
++3. **NOT_APPLICABLE proof is hard-blocking** — a missing `<STATE>_NOT_APPLICABLE.md` fires
++   `MISSING_NOT_APPLICABLE_PROOF`; an empty/template-only file fires
++   `NOT_APPLICABLE_REASON_MISSING`.
++4. **Approved dirty-worktree labels** — `ACTIVE_PARALLEL_WORK_DO_NOT_TOUCH`,
++   `AMBIENT_UNRELATED_DOC_COMMIT`, `UNRELATED_EXTERNAL_WORK`, and
++   `UNRELATED_EXTERNAL_CHANGE_NEEDS_HUMAN` are accepted; `UNKNOWN_REQUIRES_HUMAN` blocks.
++5. **Output-contract structured verdict** — `OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md` should
++   contain a fenced YAML block under key `output_contract_consistency:` with `verdict:`
++   and `blocking_findings:`. Without one, the checker falls back to a negation-aware
++   prose scan.
++
+ ---
+ 
+ ## Default lane assignment by task class
+@@ -58,7 +78,13 @@
+ - Raw test outputs ending with `EXIT_CODE:0` (exact match: `^EXIT_CODE:0\s*$`; blank, missing, conflicting, or non-numeric values block)
+ - For `GATE_STANDARD` and stronger: summary docs claiming `EXIT_CODE:0` must be backed by a raw output that proves it (`EXIT_CODE_ONLY_IN_SUMMARY_NOT_RAW` blocks)
+ - No post-PASS uncaught errors in any raw output (`POST_PASS_UNCAUGHT_ERROR` blocks)
+-- A `git_status_final.txt` file: empty, marked clean, or with every dirty path classified as `UNRELATED_EXTERNAL_WORK` in a `DIRTY_WORKTREE_CLASSIFICATION.md` / `DIRTY_WORKTREE_RECURRENCE.md` / `DIRTY_WORKTREE_RECURRENCE_AUDIT.md` (`DIRTY_GIT_STATUS_UNCLASSIFIED` and `DIRTY_GIT_STATUS_TASK_RELEVANT` block)
++- A `git_status_final.txt` file: empty, marked clean, or with every dirty path classified using one of the **approved dirty-worktree labels** (Gate 5.2-R1):
++  - `ACTIVE_PARALLEL_WORK_DO_NOT_TOUCH`
++  - `AMBIENT_UNRELATED_DOC_COMMIT`
++  - `UNRELATED_EXTERNAL_WORK`
++  - `UNRELATED_EXTERNAL_CHANGE_NEEDS_HUMAN`
++
++  Classification lives in `DIRTY_WORKTREE_CLASSIFICATION.md` / `DIRTY_WORKTREE_RECURRENCE.md` / `DIRTY_WORKTREE_RECURRENCE_AUDIT.md`. Always-blocking regardless of label: `node_modules`, `.run_artifacts`, `raw_test_output`, `raw_outputs`, generated `DOC_FRESHNESS_REPORT.md` in repo. Unclassified dirty paths fire `DIRTY_PATH_NOT_CLASSIFIED`; classification `UNKNOWN_REQUIRES_HUMAN` fires `UNKNOWN_REQUIRES_HUMAN_BLOCKER`.
+ - For `GATE_FULL`: `package_file_sizes.txt` and `package_file_hashes.txt`
+ 
+ If `tools/check_gate_package.py --final` exits nonzero, **do not return PASS** — fix the underlying issue and rerun.
+@@ -104,13 +130,21 @@
+ ```
+ [ ] Profile selected by independent reviewer/subagent (not implementer)
+ [ ] GATE_PROFILE_SELECTION.md has selected_profile, risk_tier, task_kind, and a non-empty reason
++    (Gate 5.2-R1: required for every profile, including GATE_LITE)
+ [ ] All required proof files for the selected profile present at exact relative paths
++[ ] All NOT_APPLICABLE proof files for the selected profile present with substantive reason
++    (Gate 5.2-R1: missing-or-template NA proofs are blocking)
++[ ] No raw_test_output declared via absolute host path without an in-package copy
++    (Gate 5.2-R1: HOST_PATH_NOT_PACKAGE_EVIDENCE blocks)
+ [ ] gate_used/ or gate_hash.txt present
+ [ ] OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md present (or _NOT_APPLICABLE with reason) for FULL profiles
++    Prefer the Gate 5.2-R1 structured verdict block — see template
+ [ ] Every raw test output ends with EXIT_CODE:0 (exact)
+ [ ] No summary doc claims EXIT_CODE:0 unsupported by a raw output (FULL/STANDARD)
+ [ ] No post-PASS errors in any raw output
+-[ ] git_status_final.txt: clean, empty, or every dirty path classified UNRELATED_EXTERNAL_WORK
++[ ] git_status_final.txt: clean, empty, or every dirty path classified with one of the
++    Gate 5.2-R1 approved labels: ACTIVE_PARALLEL_WORK_DO_NOT_TOUCH /
++    AMBIENT_UNRELATED_DOC_COMMIT / UNRELATED_EXTERNAL_WORK / UNRELATED_EXTERNAL_CHANGE_NEEDS_HUMAN
+ [ ] tools/check_gate_package.py --final exits 0
+ [ ] GATE_PACKAGE_VALIDATION_REPORT.md included in package after final rerun
+ [ ] Any task in the mandatory FULL_PLUS list uses GATE_FULL_PLUS_DOMAIN_ADDENDUM
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/GATE_PROFILES.md /Users/syedhaider/Downloads/gate/GATE_PROFILES.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/GATE_PROFILES.md	2026-05-01 14:50:41
++++ /Users/syedhaider/Downloads/gate/GATE_PROFILES.md	2026-05-01 17:24:51
+@@ -8,6 +8,23 @@
+ - `migration`, `runtime_state`, `merge_verification`, `release_verification`, `production_wiring`, `provider_model_routing`, `gate_change`, `prompt_authoring`, and `evidence_package` require `GATE_FULL` or stronger.
+ - A weaker selected profile is blocking.
+ 
++## Gate 5.2-R1 mandatory profile metadata (every package, every profile)
++
++Every `GATE_PROFILE_SELECTION.md` — including `GATE_LITE` packages — must declare all four
++of these fields. The Gate 5.2-R1 checker fires `MISSING_GATE_PROFILE_SELECTION`,
++`MISSING_RISK_TIER`, `MISSING_TASK_KIND`, and `MISSING_PROFILE_REASON` if any are absent.
++
++| Field | Allowed values |
++|---|---|
++| `selected_profile` (or `gate_profile`) | `GATE_LITE`, `GATE_STANDARD`, `GATE_FULL`, `GATE_FULL_PLUS_DOMAIN_ADDENDUM` |
++| `risk_tier` | `D0`, `D1`, `D2`, `D2_HOT`, `D3`, `D4` |
++| `task_kind` | `docs`, `tiny_test`, `normal_impl`, `hot_file`, `migration`, `runtime_state`, `merge_verification`, `release_verification`, `production_wiring`, `provider_model_routing`, `gate_change`, `prompt_authoring`, `evidence_package` |
++| `reason` (or `profile_selection_rationale`) | A non-empty rationale string |
++
++Without these four fields the WRONG_GATE_PROFILE selector cannot mechanically catch
++under-selection (e.g. picking `GATE_LITE` for a `merge_verification` task), so they are
++mandatory regardless of profile strength.
++
+ The gate uses four profiles to match verification depth to task risk. Profile selection occurs before any other gate state. See `18_GATE_PROFILE_SELECTION.md` for how to select the correct profile.
+ 
+ ---
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/GATE_PROFILE_SELECTION_TEMPLATE.md /Users/syedhaider/Downloads/gate/GATE_PROFILE_SELECTION_TEMPLATE.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/GATE_PROFILE_SELECTION_TEMPLATE.md	2026-05-01 11:12:25
++++ /Users/syedhaider/Downloads/gate/GATE_PROFILE_SELECTION_TEMPLATE.md	2026-05-01 17:27:42
+@@ -89,16 +89,26 @@
+ 
+ ## YAML Selector Output
+ 
++The Gate 5.2-R1 checker requires all four fields below to be present, regardless of which
++profile is selected (including `GATE_LITE`):
++
+ ```yaml
+ gate_profile: GATE_LITE | GATE_STANDARD | GATE_FULL | GATE_FULL_PLUS_DOMAIN_ADDENDUM
+-risk_tier: D0 | D1 | D2 | D2-hot | D3 | D4
++selected_profile: GATE_LITE | GATE_STANDARD | GATE_FULL | GATE_FULL_PLUS_DOMAIN_ADDENDUM
++risk_tier: D0 | D1 | D2 | D2_HOT | D3 | D4
++task_kind: docs | tiny_test | normal_impl | hot_file | migration | runtime_state |
++           merge_verification | release_verification | production_wiring |
++           provider_model_routing | gate_change | prompt_authoring | evidence_package
++profile_selection_rationale: "[non-empty rationale combining risk tier and profile selection reasoning]"
+ domain_addenda: []
+-rationale:
+-  - "[risk tier determination reasoning]"
+-  - "[profile selection reasoning]"
+ profile_override_required: false
+ human_decision_required: false
+ ```
++
++Missing any of `selected_profile`/`gate_profile`, `risk_tier`, `task_kind`, or
++`profile_selection_rationale`/`reason` triggers a blocking flag from the Gate 5.2-R1
++checker (`MISSING_GATE_PROFILE_SELECTION`, `MISSING_RISK_TIER`, `MISSING_TASK_KIND`,
++`MISSING_PROFILE_REASON`).
+ 
+ ---
+ 
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/GATE_PROFILE_SELECTOR.md /Users/syedhaider/Downloads/gate/GATE_PROFILE_SELECTOR.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/GATE_PROFILE_SELECTOR.md	2026-05-01 14:50:59
++++ /Users/syedhaider/Downloads/gate/GATE_PROFILE_SELECTOR.md	2026-05-01 17:25:02
+@@ -4,6 +4,20 @@
+ 
+ This file defines how to select the correct gate profile for any task. Read this during `18_GATE_PROFILE_SELECTION.md`.
+ 
++## Mandatory profile-selection metadata (Gate 5.2-R1)
++
++`GATE_PROFILE_SELECTION.md` must record all four of the following for **every** profile,
++including `GATE_LITE`:
++
++- `selected_profile` (or `gate_profile`)
++- `risk_tier`
++- `task_kind`
++- `reason` (or `profile_selection_rationale`)
++
++The Gate 5.2-R1 checker fires `MISSING_RISK_TIER`, `MISSING_TASK_KIND`, and
++`MISSING_PROFILE_REASON` when any of these are absent — even on Lite packages. Without
++risk_tier and task_kind, the selector cannot detect a too-weak profile choice.
++
+ ---
+ 
+ ## Risk tier definitions
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/OUTPUT_CONTRACT_CONSISTENCY_AUDIT_TEMPLATE.md /Users/syedhaider/Downloads/gate/OUTPUT_CONTRACT_CONSISTENCY_AUDIT_TEMPLATE.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/OUTPUT_CONTRACT_CONSISTENCY_AUDIT_TEMPLATE.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/OUTPUT_CONTRACT_CONSISTENCY_AUDIT_TEMPLATE.md	2026-05-01 17:27:26
+@@ -0,0 +1,94 @@
++# Output Contract Consistency Audit
++
++**Task area:** [task_area]
++**Audit completed at:** [ISO timestamp]
++**Auditor:** [agent or operator name]
++
++---
++
++## Purpose
++
++The Output Contract Consistency Audit verifies that every status-bearing surface in the
++gate package agrees on milestone labels, artifact names, status enums, and
++cross-document field values. Disagreement between surfaces (e.g. HANDOFF.md says "M61C in
++progress" while RTM and MANIFEST list it as MERGED) is a `STALE_MILESTONE_LABEL`
++contradiction and must block PASS.
++
++---
++
++## Structured verdict (Gate 5.2-R1) — REQUIRED
++
++The Gate 5.2-R1 checker prefers a machine-readable verdict block over prose scanning.
++Prose scanning is a fallback that may be confused by negated mentions of blocking
++tokens; the structured block makes the auditor's verdict explicit.
++
++```yaml
++output_contract_consistency:
++  verdict: PASS                  # PASS | FAIL | UNCERTAIN
++  blocking_findings: []          # list of blocking-token strings, empty iff verdict=PASS
++  checked_surfaces:
++    - HANDOFF
++    - RUNTIME_SCOPE_CHECK
++    - RTM
++    - MANIFEST
++    - source snapshots
++    - tests
++    - diff
++```
++
++Allowed `blocking_findings` tokens:
++
++- `STALE_CONTRACT_CLAIM`
++- `STALE_MILESTONE_LABEL`
++- `STALE_FIELD_NAME`
++- `STALE_ARTIFACT_NAME`
++- `CONTRADICTS_SOURCE`
++- `CONTRADICTS_TESTS`
++- `BLOCKING`
++- `FAIL`
++
++Checker behavior:
++
++| Block state | Result |
++|---|---|
++| `verdict: PASS` and `blocking_findings: []` | PASS |
++| `verdict: PASS` but `blocking_findings: [...]` | FAIL with `OUTPUT_CONTRACT_VERDICT_INCONSISTENT` |
++| `verdict: FAIL` (any findings) | FAIL with first finding token |
++| `verdict: UNCERTAIN` | FAIL with `OUTPUT_CONTRACT_VERDICT_UNCERTAIN` |
++| Verdict value not PASS/FAIL/UNCERTAIN | FAIL with `OUTPUT_CONTRACT_VERDICT_UNKNOWN` |
++| No structured block found | Fallback to negation-aware prose scan |
++
++---
++
++## Surfaces compared
++
++For each row, record the value found on each surface. Mark a row PASS if every surface
++agrees on the value, FAIL otherwise.
++
++| Field | HANDOFF | RUNTIME_SCOPE_CHECK | RTM | MANIFEST | source snapshots | tests | diff | Verdict |
++|---|---|---|---|---|---|---|---|---|
++| Milestone label | | | | | | | | |
++| Artifact name | | | | | | | | |
++| Status enum | | | | | | | | |
++| Build SHA | | | | | | | | |
++| Test count | | | | | | | | |
++
++---
++
++## Findings
++
++For each blocking finding, document the contradiction:
++
++- **Finding:** [token name]
++  - **Affected surfaces:** [list]
++  - **Conflict:** [exact strings that disagree]
++  - **Required correction:** [what must change before PASS]
++
++If the verdict is PASS with no findings: state explicitly that all surfaces agreed.
++
++---
++
++## Verdict notes (prose)
++
++Optional human-readable summary. The structured YAML block above is the source of truth
++for the checker.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/PROOF_FILE_REQUIREMENTS.md /Users/syedhaider/Downloads/gate/PROOF_FILE_REQUIREMENTS.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/PROOF_FILE_REQUIREMENTS.md	2026-05-01 14:50:41
++++ /Users/syedhaider/Downloads/gate/PROOF_FILE_REQUIREMENTS.md	2026-05-01 17:26:09
+@@ -78,6 +78,32 @@
+ 
+ ---
+ 
++## NOT_APPLICABLE Proof Hard Requirement (Gate 5.2-R1)
++
++Under Gate 5.2-R1 the `not_applicable_proof_required` list in
++`REQUIRED_PROOF_FILES_BY_PROFILE.yaml` is no longer advisory. Every state listed for the
++selected profile must:
++
++1. Have an exact file at `reports/<task_area>/<STATE_NAME>_NOT_APPLICABLE.md`.
++2. Be non-empty.
++3. Contain a substantive reason — either an NA keyword (e.g. "because", "audit-only task",
++   "no tests run", "no migration", "no concurrent state", "no consumer api") OR more than
++   80 characters of non-template prose.
++
++Failure modes the checker now blocks:
++
++| Condition | Flag |
++|---|---|
++| Required `_NOT_APPLICABLE.md` is missing | `MISSING_NOT_APPLICABLE_PROOF` |
++| File present but empty | `NOT_APPLICABLE_REASON_MISSING` |
++| File present but body is only a heading or template placeholders | `NOT_APPLICABLE_REASON_MISSING` |
++
++If a state is genuinely impossible to NA-prove for a profile (because the state always
++applies), it should be **removed** from `not_applicable_proof_required` rather than left as
++a listed-but-unenforced entry. The Gate 5.2-R1 GATE_LITE list is trimmed accordingly.
++
++---
++
+ ## Gate source folder
+ 
+ For every gate run, include the gate source files used. This prevents the reviewer from disagreeing about which version of the gate was active.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/REQUIRED_PROOF_FILES_BY_PROFILE.yaml /Users/syedhaider/Downloads/gate/REQUIRED_PROOF_FILES_BY_PROFILE.yaml
+--- /tmp/gate_5_2_pre_r1_baseline/gate/REQUIRED_PROOF_FILES_BY_PROFILE.yaml	2026-05-01 14:45:27
++++ /Users/syedhaider/Downloads/gate/REQUIRED_PROOF_FILES_BY_PROFILE.yaml	2026-05-01 17:24:26
+@@ -32,25 +32,21 @@
+       file: reports/{task_area}/MIGRATION_RUNNER_PROOF.md
+     - condition: execution_context_claims_present == true
+       file: reports/{task_area}/EXECUTION_CONTEXT_AUDIT.md
++  # Gate 5.2-R1: NA proofs are now enforced as a hard requirement (was advisory). The
++  # list below is the trimmed GATE_LITE set — only those states whose explicit
++  # NOT_APPLICABLE proof we actually want to see in every Lite package. States that
++  # are inherently inapplicable for D0/D1 work (e.g. CONCURRENCY, MIGRATION_RUNNER)
++  # are no longer enforced via NA proof; their non-applicability is implicit in the
++  # profile's `required_always` list and the profile selector's risk tier.
+   not_applicable_proof_required:
+-    - PROMPT_CONTRACT_REVIEW
+     - PRODUCTION_CALLER_AUDIT
+     - CONSUMER_API_PROOF_AUDIT
+     - WARNING_OUTPUT_AUDIT
+     - REQUIRED_TEST_SET_EXACTNESS
+-    - MANIFEST_FINALIZATION_AUDIT
+-    - IMPLEMENTER_PROMPT_LINT
+     - STRANDED_HELPER_AUDIT
+-    - DIRTY_WORKTREE_RECURRENCE_AUDIT
+-    - WORK_ALLOCATION_AUDIT
+     - EXPORT_CHANNEL_AUDIT
+     - DIFF_BASE_SCOPE_AUDIT
+-    - FLAKE_TIMEOUT_AUDIT
+-    - CONCURRENCY_ASSUMPTIONS_AUDIT
+-    - DOWNSTREAM_CONSUMER_READINESS_AUDIT
+-    - NEXT_PROMPT_DECISION
+-    - CTO_OPERATOR_INSIGHT_REVIEW
+-    - GATE_EFFECTIVENESS_LOG
++    - DIRTY_WORKTREE_RECURRENCE_AUDIT
+ 
+ GATE_STANDARD:
+   required_always:
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/absolute_host_path_plus_package_copy/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/absolute_host_path_plus_package_copy/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/absolute_host_path_plus_package_copy/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/absolute_host_path_plus_package_copy/FIXTURE_SPEC.md	2026-05-01 17:13:38
+@@ -0,0 +1,23 @@
++# Fixture: absolute_host_path_plus_package_copy
++
++**Profile:** GATE_FULL
++**Risk tier:** D3
++**Task kind:** merge_verification
++**Expected verdict:** PASS
++
++## Why this fixture exists
++
++Gate 5.2-R1 P01 allows a host-provenance reference IF the same artifact also has a
++package-relative copy. This documents the exact provenance (where the file came from
++on the host) without sacrificing the export-completeness rule (the artifact is still
++present in the package and verifiable).
++
++## Setup
++
++EVIDENCE_LEDGER.yaml declares one `raw_test_output` artifact with both:
++- `provenance_host_path: /tmp/something_that_was_run_on_host.txt`
++- `package_relative_path: raw/test_output.txt`
++
++`raw/test_output.txt` exists in the package and contains a valid `EXIT_CODE:0`.
++
++The checker should resolve the host-path leak via the package-relative copy and PASS.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/absolute_raw_output_outside_package/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/absolute_raw_output_outside_package/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/absolute_raw_output_outside_package/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/absolute_raw_output_outside_package/FIXTURE_SPEC.md	2026-05-01 17:12:06
+@@ -0,0 +1,23 @@
++# Fixture: absolute_raw_output_outside_package
++
++**Profile:** GATE_FULL
++**Risk tier:** D3
++**Task kind:** merge_verification
++**Expected verdict:** FAIL with `HOST_PATH_NOT_PACKAGE_EVIDENCE`
++
++## Why this fixture exists
++
++Gate 5.2-R1 P01: An exported package must contain its own raw test outputs. A package that
++declares an absolute host path like `/tmp/some_raw_output.txt` in EVIDENCE_LEDGER.yaml has not
++actually exported the evidence — it is referencing a host filesystem location that may be
++gone, modified, or different on a reviewer's machine.
++
++The checker must flag this as `HOST_PATH_NOT_PACKAGE_EVIDENCE` and refuse PASS.
++
++## Setup
++
++Same as happy_path_gate_full, but:
++- `EVIDENCE_LEDGER.yaml` declares a single `raw_test_output` artifact whose `artifact_path`
++  is `/tmp/some_raw_output.txt`
++- That file is NOT included in the package
++- No `package_relative_path` field is provided
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/dirty_git_status_active_parallel_work/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/dirty_git_status_active_parallel_work/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/dirty_git_status_active_parallel_work/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/dirty_git_status_active_parallel_work/FIXTURE_SPEC.md	2026-05-01 17:17:14
+@@ -0,0 +1,18 @@
++# Fixture: dirty_git_status_active_parallel_work
++
++**Profile:** GATE_FULL
++**Risk tier:** D3
++**Task kind:** merge_verification
++**Expected verdict:** PASS
++
++## Why this fixture exists
++
++Gate 5.2-R1 P04: The dirty-worktree label whitelist now accepts
++`ACTIVE_PARALLEL_WORK_DO_NOT_TOUCH` as a per-path classification, in addition to the
++prior `UNRELATED_EXTERNAL_WORK`. Active parallel work (e.g. another agent or another
++sprint actively editing those paths) is allowed if every dirty path is classified.
++
++## Setup
++
++`git_status_final.txt` lists 2 dirty entries; `DIRTY_WORKTREE_RECURRENCE.md`
++classifies both as `ACTIVE_PARALLEL_WORK_DO_NOT_TOUCH` with reasons.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/dirty_git_status_ambient_doc_commit/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/dirty_git_status_ambient_doc_commit/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/dirty_git_status_ambient_doc_commit/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/dirty_git_status_ambient_doc_commit/FIXTURE_SPEC.md	2026-05-01 17:17:55
+@@ -0,0 +1,16 @@
++# Fixture: dirty_git_status_ambient_doc_commit
++
++**Profile:** GATE_FULL
++**Risk tier:** D3
++**Task kind:** merge_verification
++**Expected verdict:** PASS
++
++## Why this fixture exists
++
++Gate 5.2-R1 P04: `AMBIENT_UNRELATED_DOC_COMMIT` is added as an approved label —
++documentation that was committed alongside but unrelated to the audited change.
++
++## Setup
++
++`git_status_final.txt` lists 1 dirty entry; `DIRTY_WORKTREE_RECURRENCE.md`
++classifies it as `AMBIENT_UNRELATED_DOC_COMMIT` with a reason.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/dirty_git_status_unclassified_paths/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/dirty_git_status_unclassified_paths/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/dirty_git_status_unclassified_paths/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/dirty_git_status_unclassified_paths/FIXTURE_SPEC.md	2026-05-01 17:19:08
+@@ -0,0 +1,16 @@
++# Fixture: dirty_git_status_unclassified_paths
++
++**Profile:** GATE_FULL
++**Risk tier:** D3
++**Task kind:** merge_verification
++**Expected verdict:** FAIL with `DIRTY_PATH_NOT_CLASSIFIED`
++
++## Why this fixture exists
++
++Gate 5.2-R1 P04: A `DIRTY_WORKTREE_RECURRENCE.md` file exists, but it does not include
++every dirty path from `git_status_final.txt`. The unclassified path must block.
++
++## Setup
++
++`git_status_final.txt` lists 2 dirty entries; `DIRTY_WORKTREE_RECURRENCE.md`
++classifies only one of them.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/dirty_git_status_unknown_requires_human/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/dirty_git_status_unknown_requires_human/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/dirty_git_status_unknown_requires_human/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/dirty_git_status_unknown_requires_human/FIXTURE_SPEC.md	2026-05-01 17:18:30
+@@ -0,0 +1,17 @@
++# Fixture: dirty_git_status_unknown_requires_human
++
++**Profile:** GATE_FULL
++**Risk tier:** D3
++**Task kind:** merge_verification
++**Expected verdict:** FAIL with `UNKNOWN_REQUIRES_HUMAN_BLOCKER`
++
++## Why this fixture exists
++
++Gate 5.2-R1 P04: A dirty path explicitly classified `UNKNOWN_REQUIRES_HUMAN` is BLOCKING.
++This is the escape hatch for a row the agent could not classify on its own — the gate
++must surface it to a human, not auto-pass.
++
++## Setup
++
++`git_status_final.txt` lists 1 dirty entry; `DIRTY_WORKTREE_RECURRENCE.md`
++classifies it as `UNKNOWN_REQUIRES_HUMAN`.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/empty_not_applicable_reason/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/empty_not_applicable_reason/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/empty_not_applicable_reason/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/empty_not_applicable_reason/FIXTURE_SPEC.md	2026-05-01 17:15:44
+@@ -0,0 +1,18 @@
++# Fixture: empty_not_applicable_reason
++
++**Profile:** GATE_STANDARD
++**Risk tier:** D2
++**Task kind:** normal_impl
++**Expected verdict:** FAIL with `NOT_APPLICABLE_REASON_MISSING`
++
++## Why this fixture exists
++
++Gate 5.2-R1 P03: A NOT_APPLICABLE proof file that exists but contains no substantive
++reason (e.g. only a heading) is no longer accepted. The body must contain a real
++explanatory reason — either an NA keyword (because, audit-only task, no tests run, ...)
++or >80 characters of non-template prose.
++
++## Setup
++
++GATE_STANDARD package with all four required `_NOT_APPLICABLE.md` files present, but
++the GATE_EFFECTIVENESS_LOG_NOT_APPLICABLE.md file contains only a heading.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/lite_profile_missing_risk_task/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/lite_profile_missing_risk_task/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/lite_profile_missing_risk_task/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/lite_profile_missing_risk_task/FIXTURE_SPEC.md	2026-05-01 17:14:36
+@@ -0,0 +1,20 @@
++# Fixture: lite_profile_missing_risk_task
++
++**Profile:** GATE_LITE
++**Risk tier:** (intentionally absent)
++**Task kind:** (intentionally absent)
++**Expected verdict:** FAIL with `MISSING_RISK_TIER` and `MISSING_TASK_KIND`
++
++## Why this fixture exists
++
++Gate 5.2-R1 P02: Even GATE_LITE packages must declare `risk_tier` and `task_kind` so the
++WRONG_GATE_PROFILE selector can mechanically detect a too-weak profile choice. Prior to
++R1, Lite packages could omit these fields and slip through without selector validation.
++
++## Setup
++
++GATE_PROFILE_SELECTION.md declares only `gate_profile: GATE_LITE` with a rationale, but
++omits `risk_tier:` and `task_kind:`.
++
++The test invokes the checker without `--risk-tier` or `--task-kind` so the metadata must
++come from the file (it doesn't), causing both flags to fire.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/missing_not_applicable_proof/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/missing_not_applicable_proof/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/missing_not_applicable_proof/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/missing_not_applicable_proof/FIXTURE_SPEC.md	2026-05-01 17:15:15
+@@ -0,0 +1,20 @@
++# Fixture: missing_not_applicable_proof
++
++**Profile:** GATE_STANDARD
++**Risk tier:** D2
++**Task kind:** normal_impl
++**Expected verdict:** FAIL with `MISSING_NOT_APPLICABLE_PROOF`
++
++## Why this fixture exists
++
++Gate 5.2-R1 P03: `not_applicable_proof_required` becomes a hard requirement, not advisory.
++GATE_STANDARD lists DIRTY_WORKTREE_RECURRENCE_AUDIT, CONCURRENCY_ASSUMPTIONS_AUDIT,
++CTO_OPERATOR_INSIGHT_REVIEW, and GATE_EFFECTIVENESS_LOG. None of the corresponding
++`_NOT_APPLICABLE.md` files are present.
++
++The checker should fire `MISSING_NOT_APPLICABLE_PROOF` for at least one of those.
++
++## Setup
++
++GATE_STANDARD package (sourced from happy_path_gate_full) with all GATE_STANDARD
++required_always files present, but no NOT_APPLICABLE proof files.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/not_applicable_with_reason/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/not_applicable_with_reason/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/not_applicable_with_reason/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/not_applicable_with_reason/FIXTURE_SPEC.md	2026-05-01 17:16:25
+@@ -0,0 +1,18 @@
++# Fixture: not_applicable_with_reason
++
++**Profile:** GATE_STANDARD
++**Risk tier:** D2
++**Task kind:** normal_impl
++**Expected verdict:** PASS
++
++## Why this fixture exists
++
++Gate 5.2-R1 P03: Validates the happy path of NA proofs — every required `_NOT_APPLICABLE.md`
++file is present AND contains a substantive reason. Selector minimum profile for D2/normal_impl
++is GATE_STANDARD, so this is the correct profile choice for the test.
++
++## Setup
++
++GATE_STANDARD package with all four required `_NOT_APPLICABLE.md` files present, each with a
++substantive reason. All other GATE_STANDARD required files are present (sourced from
++happy_path_gate_full).
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/output_contract_actual_token_unstructured/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/output_contract_actual_token_unstructured/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/output_contract_actual_token_unstructured/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/output_contract_actual_token_unstructured/FIXTURE_SPEC.md	2026-05-01 17:22:22
+@@ -0,0 +1,16 @@
++# Fixture: output_contract_actual_token_unstructured
++
++**Profile:** GATE_FULL
++**Risk tier:** D3
++**Task kind:** merge_verification
++**Expected verdict:** FAIL with `STALE_MILESTONE_LABEL`
++
++## Why this fixture exists
++
++Gate 5.2-R1 P05: When no structured verdict block is present, the fallback prose
++scan must still detect a positive token in non-negated context.
++
++## Setup
++
++OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md has no structured YAML block. The body
++contains "STALE_MILESTONE_LABEL detected in HANDOFF.md line 42".
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/output_contract_inconsistent_verdict/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/output_contract_inconsistent_verdict/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/output_contract_inconsistent_verdict/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/output_contract_inconsistent_verdict/FIXTURE_SPEC.md	2026-05-01 17:21:52
+@@ -0,0 +1,17 @@
++# Fixture: output_contract_inconsistent_verdict
++
++**Profile:** GATE_FULL
++**Risk tier:** D3
++**Task kind:** merge_verification
++**Expected verdict:** FAIL with `OUTPUT_CONTRACT_VERDICT_INCONSISTENT`
++
++## Why this fixture exists
++
++Gate 5.2-R1 P05: When a structured YAML verdict block declares verdict=PASS but the
++`blocking_findings` list is non-empty, the audit contradicts itself and must block.
++
++## Setup
++
++OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md contains a fenced YAML block with
++`output_contract_consistency.verdict: PASS` and
++`blocking_findings: [STALE_MILESTONE_LABEL]`.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/output_contract_negated_token/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/output_contract_negated_token/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/output_contract_negated_token/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/output_contract_negated_token/FIXTURE_SPEC.md	2026-05-01 17:20:09
+@@ -0,0 +1,17 @@
++# Fixture: output_contract_negated_token
++
++**Profile:** GATE_FULL
++**Risk tier:** D3
++**Task kind:** merge_verification
++**Expected verdict:** PASS
++
++## Why this fixture exists
++
++Gate 5.2-R1 P05: When the OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md uses prose like
++"No STALE_MILESTONE_LABEL found", the negation-aware fallback scan must NOT
++mistake the negated token for a positive detection.
++
++## Setup
++
++OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md has no structured YAML verdict block; it
++contains negated prose for every blocking token.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/output_contract_structured_fail/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/output_contract_structured_fail/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/output_contract_structured_fail/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/output_contract_structured_fail/FIXTURE_SPEC.md	2026-05-01 17:21:09
+@@ -0,0 +1,17 @@
++# Fixture: output_contract_structured_fail
++
++**Profile:** GATE_FULL
++**Risk tier:** D3
++**Task kind:** merge_verification
++**Expected verdict:** FAIL with `STALE_MILESTONE_LABEL`
++
++## Why this fixture exists
++
++Gate 5.2-R1 P05: When a structured YAML verdict block declares verdict=FAIL with
++listed blocking_findings, the checker must report a corresponding token flag.
++
++## Setup
++
++OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md contains a fenced YAML block with
++`output_contract_consistency.verdict: FAIL` and
++`blocking_findings: [STALE_MILESTONE_LABEL]`.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/output_contract_structured_pass/FIXTURE_SPEC.md /Users/syedhaider/Downloads/gate/tests/fixtures/output_contract_structured_pass/FIXTURE_SPEC.md
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/fixtures/output_contract_structured_pass/FIXTURE_SPEC.md	1970-01-01 02:00:00
++++ /Users/syedhaider/Downloads/gate/tests/fixtures/output_contract_structured_pass/FIXTURE_SPEC.md	2026-05-01 17:20:38
+@@ -0,0 +1,17 @@
++# Fixture: output_contract_structured_pass
++
++**Profile:** GATE_FULL
++**Risk tier:** D3
++**Task kind:** merge_verification
++**Expected verdict:** PASS
++
++## Why this fixture exists
++
++Gate 5.2-R1 P05: When a structured YAML verdict block is present with verdict=PASS
++and an empty blocking_findings list, the checker uses the structured verdict directly
++(no prose scanning).
++
++## Setup
++
++OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md contains a fenced YAML block with
++`output_contract_consistency.verdict: PASS` and `blocking_findings: []`.
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tests/test_check_gate_package.py /Users/syedhaider/Downloads/gate/tests/test_check_gate_package.py
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tests/test_check_gate_package.py	2026-05-01 14:48:10
++++ /Users/syedhaider/Downloads/gate/tests/test_check_gate_package.py	2026-05-01 17:23:45
+@@ -173,6 +173,157 @@
+     assert_failed(run_checker("missing_checker_report_final_mode", final=True), "MISSING_CHECKER_REPORT_FINAL_MODE")
+ 
+ 
++# -----------------------------------------------------------------------------
++# Gate 5.2-R1 P01 — host-path leakage
++# -----------------------------------------------------------------------------
++
++
++def test_absolute_raw_output_outside_package():
++    """P01-bad: absolute host path in EVIDENCE_LEDGER, no in-package copy."""
++    assert_failed(
++        run_checker("absolute_raw_output_outside_package"),
++        "HOST_PATH_NOT_PACKAGE_EVIDENCE",
++    )
++
++
++def test_absolute_host_path_plus_package_copy():
++    """P01-good: host provenance recorded with a sibling in-package copy passes."""
++    assert_passed(run_checker("absolute_host_path_plus_package_copy", final=True))
++
++
++# -----------------------------------------------------------------------------
++# Gate 5.2-R1 P02 — risk_tier / task_kind / reason mandatory for ALL profiles
++# -----------------------------------------------------------------------------
++
++
++def test_lite_profile_missing_risk_task():
++    """P02-bad: GATE_LITE without risk_tier/task_kind must fire MISSING_RISK_TIER and MISSING_TASK_KIND."""
++    result = run_checker(
++        "lite_profile_missing_risk_task",
++        profile=None,
++        risk_tier=None,
++        task_kind=None,
++    )
++    assert result.returncode != 0, f"expected failure\nstdout:{result.stdout}\nstderr:{result.stderr}"
++    combined = result.stdout + result.stderr
++    assert "MISSING_RISK_TIER" in combined, f"expected MISSING_RISK_TIER\nstdout:{result.stdout}\nstderr:{result.stderr}"
++    assert "MISSING_TASK_KIND" in combined, f"expected MISSING_TASK_KIND\nstdout:{result.stdout}\nstderr:{result.stderr}"
++
++
++# -----------------------------------------------------------------------------
++# Gate 5.2-R1 P03 — NOT_APPLICABLE proof hard requirement
++# -----------------------------------------------------------------------------
++
++
++def test_missing_not_applicable_proof():
++    """P03-bad: GATE_STANDARD without NA proofs fires MISSING_NOT_APPLICABLE_PROOF."""
++    assert_failed(
++        run_checker(
++            "missing_not_applicable_proof",
++            profile="GATE_STANDARD",
++            risk_tier="D2",
++            task_kind="normal_impl",
++        ),
++        "MISSING_NOT_APPLICABLE_PROOF",
++    )
++
++
++def test_empty_not_applicable_reason():
++    """P03-bad: NA proof present but heading-only fires NOT_APPLICABLE_REASON_MISSING."""
++    assert_failed(
++        run_checker(
++            "empty_not_applicable_reason",
++            profile="GATE_STANDARD",
++            risk_tier="D2",
++            task_kind="normal_impl",
++        ),
++        "NOT_APPLICABLE_REASON_MISSING",
++    )
++
++
++def test_not_applicable_with_reason():
++    """P03-good: substantive NA reasons let the package PASS."""
++    assert_passed(
++        run_checker(
++            "not_applicable_with_reason",
++            profile="GATE_STANDARD",
++            risk_tier="D2",
++            task_kind="normal_impl",
++            final=True,
++        )
++    )
++
++
++# -----------------------------------------------------------------------------
++# Gate 5.2-R1 P04 — approved dirty-worktree label set
++# -----------------------------------------------------------------------------
++
++
++def test_dirty_git_status_active_parallel_work():
++    """P04-good: ACTIVE_PARALLEL_WORK_DO_NOT_TOUCH classification passes."""
++    assert_passed(run_checker("dirty_git_status_active_parallel_work", final=True))
++
++
++def test_dirty_git_status_ambient_doc_commit():
++    """P04-good: AMBIENT_UNRELATED_DOC_COMMIT classification passes."""
++    assert_passed(run_checker("dirty_git_status_ambient_doc_commit", final=True))
++
++
++def test_dirty_git_status_unknown_requires_human():
++    """P04-bad: UNKNOWN_REQUIRES_HUMAN classification blocks via UNKNOWN_REQUIRES_HUMAN_BLOCKER."""
++    assert_failed(
++        run_checker("dirty_git_status_unknown_requires_human"),
++        "UNKNOWN_REQUIRES_HUMAN_BLOCKER",
++    )
++
++
++def test_dirty_git_status_unclassified_paths():
++    """P04-bad: classification file exists but a dirty path is not in it — DIRTY_PATH_NOT_CLASSIFIED."""
++    assert_failed(
++        run_checker("dirty_git_status_unclassified_paths"),
++        "DIRTY_PATH_NOT_CLASSIFIED",
++    )
++
++
++# -----------------------------------------------------------------------------
++# Gate 5.2-R1 P05 — output-contract structured verdict + negation-aware fallback
++# -----------------------------------------------------------------------------
++
++
++def test_output_contract_negated_token():
++    """P05-good: negated prose ('No STALE_MILESTONE_LABEL found') passes the fallback scan."""
++    assert_passed(run_checker("output_contract_negated_token", final=True))
++
++
++def test_output_contract_structured_pass():
++    """P05-good: structured verdict PASS with empty blocking_findings."""
++    assert_passed(run_checker("output_contract_structured_pass", final=True))
++
++
++def test_output_contract_structured_fail():
++    """P05-bad: structured verdict FAIL with STALE_MILESTONE_LABEL finding blocks."""
++    assert_failed(
++        run_checker("output_contract_structured_fail"),
++        "STALE_MILESTONE_LABEL",
++    )
++
++
++def test_output_contract_inconsistent_verdict():
++    """P05-bad: structured verdict PASS but blocking_findings non-empty fires OUTPUT_CONTRACT_VERDICT_INCONSISTENT."""
++    assert_failed(
++        run_checker("output_contract_inconsistent_verdict"),
++        "OUTPUT_CONTRACT_VERDICT_INCONSISTENT",
++    )
++
++
++def test_output_contract_actual_token_unstructured():
++    """P05-bad: prose audit with 'STALE_MILESTONE_LABEL detected' (no structured block) fires."""
++    assert_failed(
++        run_checker("output_contract_actual_token_unstructured"),
++        "STALE_MILESTONE_LABEL",
++    )
++
++
+ def main():
+     tests = [
+         test_blank_exit_code,
+@@ -196,6 +347,26 @@
+         test_warning_audit_blocking_prose,
+         test_warning_audit_expected_non_blocking_only,
+         test_missing_checker_report_final_mode,
++        # Gate 5.2-R1 P01
++        test_absolute_raw_output_outside_package,
++        test_absolute_host_path_plus_package_copy,
++        # Gate 5.2-R1 P02
++        test_lite_profile_missing_risk_task,
++        # Gate 5.2-R1 P03
++        test_missing_not_applicable_proof,
++        test_empty_not_applicable_reason,
++        test_not_applicable_with_reason,
++        # Gate 5.2-R1 P04
++        test_dirty_git_status_active_parallel_work,
++        test_dirty_git_status_ambient_doc_commit,
++        test_dirty_git_status_unknown_requires_human,
++        test_dirty_git_status_unclassified_paths,
++        # Gate 5.2-R1 P05
++        test_output_contract_negated_token,
++        test_output_contract_structured_pass,
++        test_output_contract_structured_fail,
++        test_output_contract_inconsistent_verdict,
++        test_output_contract_actual_token_unstructured,
+     ]
+ 
+     passed = 0
+diff -ruN --ex /tmp/gate_5_2_pre_r1_baseline/gate/tools/check_gate_package.py /Users/syedhaider/Downloads/gate/tools/check_gate_package.py
+--- /tmp/gate_5_2_pre_r1_baseline/gate/tools/check_gate_package.py	2026-05-01 14:47:59
++++ /Users/syedhaider/Downloads/gate/tools/check_gate_package.py	2026-05-01 17:11:26
+@@ -8,6 +8,7 @@
+ """
+ 
+ import argparse
++import os
+ import re
+ import shutil
+ import sys
+@@ -89,6 +90,9 @@
+     declared: str
+     path: Path | None
+     source: str
++    # Gate 5.2-R1: host-path leakage tracking
++    host_path_leak: bool = False  # declared path is absolute and resolves outside the package
++    has_package_relative_copy: bool = False  # paired with package_relative_path that exists in-package
+ 
+ 
+ def load_yaml_file(path: Path):
+@@ -132,6 +136,21 @@
+     return value.strip()
+ 
+ 
++def _is_path_in_package(file_path: str | Path, package_path: str | Path) -> bool:
++    """Return True iff file_path resolves under package_path (after symlink/normalization).
++
++    Used by Gate 5.2-R1 to enforce that every declared evidence artifact lives inside the
++    exported package. Absolute host paths (e.g. ``/tmp/...``) that do not resolve under
++    package_path are treated as host-path leakage, not in-package evidence.
++    """
++    try:
++        real_file = os.path.realpath(os.path.abspath(str(file_path)))
++        real_pkg = os.path.realpath(os.path.abspath(str(package_path)))
++        return os.path.commonpath([real_file, real_pkg]) == real_pkg
++    except (ValueError, OSError):
++        return False
++
++
+ def extract_markdown_yaml_map(path: Path) -> dict:
+     content = path.read_text(encoding="utf-8", errors="ignore")
+     fenced = re.search(r"```yaml\s*(.*?)```", content, re.DOTALL | re.IGNORECASE)
+@@ -182,25 +201,28 @@
+             "No selected profile supplied via CLI or GATE_PROFILE_SELECTION.md",
+             flag="MISSING_GATE_PROFILE_SELECTION",
+         ))
+-    if risk_tier is None and profile in STANDARD_AND_UP:
++    # Gate 5.2-R1: risk_tier and task_kind are now mandatory for ALL profiles, including
++    # GATE_LITE. Without them the WRONG_GATE_PROFILE selector cannot mechanically detect
++    # that a package picked too-weak a profile for its actual task class.
++    if risk_tier is None:
+         results.append(CheckResult(
+             "profile_selection_context",
+             False,
+-            "No risk tier supplied via CLI or GATE_PROFILE_SELECTION.md for Standard/Full package",
++            "No risk tier supplied via CLI or GATE_PROFILE_SELECTION.md (required for all profiles, including GATE_LITE)",
+             flag="MISSING_RISK_TIER",
+         ))
+-    if task_kind is None and profile in STANDARD_AND_UP:
++    if task_kind is None:
+         results.append(CheckResult(
+             "profile_selection_context",
+             False,
+-            "No task kind supplied via CLI or GATE_PROFILE_SELECTION.md for Standard/Full package",
++            "No task kind supplied via CLI or GATE_PROFILE_SELECTION.md (required for all profiles, including GATE_LITE)",
+             flag="MISSING_TASK_KIND",
+         ))
+-    if selection_path.exists() and not file_reason and profile in STANDARD_AND_UP:
++    if selection_path.exists() and not file_reason:
+         results.append(CheckResult(
+             "profile_selection_context",
+             False,
+-            f"{selection_path.relative_to(package_path)} missing rationale/reason field",
++            f"{selection_path.relative_to(package_path)} missing rationale/reason field (required for all profiles, including GATE_LITE)",
+             flag="MISSING_PROFILE_REASON",
+         ))
+ 
+@@ -350,6 +372,75 @@
+     return results
+ 
+ 
++_NA_TEMPLATE_TOKENS = {
++    "[STATE_NAME]",
++    "[GATE_PROFILE]",
++    "[one sentence]",
++    "[reason]",
++    "[REASON]",
++}
++_NA_REASON_KEYWORDS = (
++    "because",
++    "no tests run",
++    "no tests were run",
++    "not applicable in this",
++    "not applicable for this",
++    "audit-only task",
++    "audit-only",
++    "no implementer",
++    "no diff",
++    "no migration",
++    "no concurrent",
++    "not produced by",
++    "no raw output",
++    "no raw test output",
++    "no consumer api",
++    "no production caller",
++    "no warning output",
++    "no new symbols",
++    "no exports",
++    "no helper",
++    "no schema change",
++    "documentation-only",
++    "docs-only",
++)
++
++
++def _na_reason_is_substantive(content: str) -> bool:
++    """Return True if a NOT_APPLICABLE proof file contains a substantive reason.
++
++    Gate 5.2-R1 hardens NA proofs from advisory to blocking. The body must contain a
++    real explanatory reason — either >80 characters of non-template prose or a known
++    NA keyword (e.g. "because", "audit-only task", "no tests run").
++    """
++    if not content:
++        return False
++    cleaned_lines = []
++    for line in content.splitlines():
++        stripped = line.strip()
++        if not stripped:
++            continue
++        # strip markdown headings
++        if stripped.startswith("#"):
++            continue
++        # strip lines that are just template placeholders
++        contains_only_token = False
++        for token in _NA_TEMPLATE_TOKENS:
++            if token in stripped:
++                contains_only_token = True
++                break
++        if contains_only_token:
++            continue
++        cleaned_lines.append(stripped)
++    cleaned_text = " ".join(cleaned_lines)
++    lowered = cleaned_text.lower()
++    if any(keyword in lowered for keyword in _NA_REASON_KEYWORDS):
++        return True
++    if len(cleaned_text) > 80:
++        return True
++    return False
++
++
+ def check_not_applicable_files(package_path: Path, profile: str, gate_dir: Path, task_area: str) -> list[CheckResult]:
+     try:
+         data = load_required_proof_yaml(gate_dir)
+@@ -362,14 +453,43 @@
+     results = []
+     for state_name in profile_data.get("not_applicable_proof_required", []):
+         rel_path = Path(f"reports/{task_area}/{state_name}_NOT_APPLICABLE.md")
+-        if (package_path / rel_path).exists():
+-            results.append(CheckResult("not_applicable_files", True, f"{rel_path.as_posix()} present"))
+-        else:
++        full_path = package_path / rel_path
++        if not full_path.exists():
++            # Gate 5.2-R1: missing NA proof is now blocking, not advisory.
+             results.append(CheckResult(
+                 "not_applicable_files",
+-                True,
+-                f"WARN: {rel_path.as_posix()} not found",
++                False,
++                f"MISSING required NOT_APPLICABLE proof: {rel_path.as_posix()}",
++                flag="MISSING_NOT_APPLICABLE_PROOF",
+             ))
++            continue
++        try:
++            content = full_path.read_text(encoding="utf-8", errors="ignore")
++        except Exception as exc:
++            results.append(CheckResult(
++                "not_applicable_files",
++                False,
++                f"{rel_path.as_posix()}: cannot read file ({exc})",
++                flag="NOT_APPLICABLE_REASON_MISSING",
++            ))
++            continue
++        if not content.strip():
++            results.append(CheckResult(
++                "not_applicable_files",
++                False,
++                f"{rel_path.as_posix()}: empty file",
++                flag="NOT_APPLICABLE_REASON_MISSING",
++            ))
++            continue
++        if not _na_reason_is_substantive(content):
++            results.append(CheckResult(
++                "not_applicable_files",
++                False,
++                f"{rel_path.as_posix()}: present but missing substantive reason",
++                flag="NOT_APPLICABLE_REASON_MISSING",
++            ))
++            continue
++        results.append(CheckResult("not_applicable_files", True, f"{rel_path.as_posix()} present with substantive reason"))
+     return results
+ 
+ 
+@@ -386,12 +506,34 @@
+     )
+ 
+ 
+-def register_raw_ref(raw_refs: dict[str, RawOutputRef], package_path: Path, declared: str, source: str):
++def register_raw_ref(
++    raw_refs: dict[str, RawOutputRef],
++    package_path: Path,
++    declared: str,
++    source: str,
++    *,
++    package_relative_override: str | None = None,
++):
++    """Register a raw-output reference and track host-path leakage.
++
++    Gate 5.2-R1 adds host-path leakage detection: if ``declared`` is an absolute path
++    that does not resolve under ``package_path``, the entry is marked
++    ``host_path_leak=True``. If a sibling ``package_relative_override`` is supplied and
++    its target exists in-package, ``has_package_relative_copy=True`` is set so the
++    leak does not block PASS. The package-relative copy becomes the resolved path so
++    downstream EXIT_CODE/post-PASS scanning runs against the in-package artifact.
++    """
+     declared = declared.strip()
+     if not declared:
+         return
+-    candidates = []
++
+     declared_path = Path(declared)
++    host_path_leak = False
++    if declared_path.is_absolute():
++        if not _is_path_in_package(declared_path, package_path):
++            host_path_leak = True
++
++    candidates: list[Path] = []
+     candidates.append(package_path / declared_path)
+     if not declared_path.is_absolute():
+         candidates.append(package_path / declared_path.name)
+@@ -401,11 +543,39 @@
+         if candidate.exists() and candidate.is_file():
+             resolved = candidate
+             break
++
++    has_package_relative_copy = False
++    if host_path_leak and package_relative_override:
++        override = Path(package_relative_override.strip())
++        override_candidates: list[Path] = [package_path / override]
++        if not override.is_absolute():
++            override_candidates.append(package_path / override.name)
++            override_candidates.extend(package_path.rglob(override.name))
++        for candidate in override_candidates:
++            if candidate.exists() and candidate.is_file():
++                has_package_relative_copy = True
++                if resolved is None:
++                    resolved = candidate
++                break
++
+     key = str(declared_path).replace("\\", "/")
+     if key not in raw_refs:
+-        raw_refs[key] = RawOutputRef(key=key, declared=declared, path=resolved, source=source)
+-    elif raw_refs[key].path is None and resolved is not None:
+-        raw_refs[key].path = resolved
++        raw_refs[key] = RawOutputRef(
++            key=key,
++            declared=declared,
++            path=resolved,
++            source=source,
++            host_path_leak=host_path_leak,
++            has_package_relative_copy=has_package_relative_copy,
++        )
++    else:
++        existing = raw_refs[key]
++        if existing.path is None and resolved is not None:
++            existing.path = resolved
++        if host_path_leak:
++            existing.host_path_leak = True
++        if has_package_relative_copy:
++            existing.has_package_relative_copy = True
+ 
+ 
+ def discover_raw_test_outputs(package_path: Path) -> list[RawOutputRef]:
+@@ -426,11 +596,33 @@
+                 continue
+             if artifact.get("artifact_type") != "raw_test_output":
+                 continue
+-            declared = (
+-                artifact.get("package_path")
+-                or artifact.get("artifact_path")
+-                or artifact.get("artifact_filename")
++            # Gate 5.2-R1: prefer the explicit `package_path`/`package_relative_path` for
++            # registration. If only `provenance_host_path` is supplied, register the host
++            # path so host-path leakage detection fires; if both are supplied, register the
++            # host path with the package-relative override so the in-package copy resolves
++            # the leak.
++            package_relative = (
++                artifact.get("package_relative_path")
++                or artifact.get("package_path")
+             )
++            provenance_host = artifact.get("provenance_host_path")
++            artifact_path_field = artifact.get("artifact_path")
++            artifact_filename = artifact.get("artifact_filename")
++
++            if provenance_host:
++                # Host path declared explicitly. Pair with package-relative copy if any.
++                register_raw_ref(
++                    raw_refs,
++                    package_path,
++                    str(provenance_host),
++                    "evidence_ledger",
++                    package_relative_override=str(package_relative) if package_relative else None,
++                )
++                if package_relative:
++                    register_raw_ref(raw_refs, package_path, str(package_relative), "evidence_ledger")
++                continue
++
++            declared = package_relative or artifact_path_field or artifact_filename
+             if declared:
+                 register_raw_ref(raw_refs, package_path, str(declared), "evidence_ledger")
+ 
+@@ -544,6 +736,17 @@
+ 
+     summary_claim_docs = summary_docs_claim_exit_zero(package_path)
+     for raw_ref in raw_outputs:
++        # Gate 5.2-R1: flag absolute host paths that don't resolve into the package and
++        # have no in-package copy. Evidence must be EXPORTED, not referenced from the
++        # execution host's filesystem.
++        if raw_ref.host_path_leak and not raw_ref.has_package_relative_copy:
++            results.append(CheckResult(
++                "exit_code_strict",
++                False,
++                f"{raw_ref.declared}: declared via {raw_ref.source} but path is absolute and resolves outside the package",
++                flag="HOST_PATH_NOT_PACKAGE_EVIDENCE",
++            ))
++            continue
+         if raw_ref.path is None:
+             results.append(CheckResult(
+                 "exit_code_strict",
+@@ -728,14 +931,30 @@
+         )]
+ 
+     text = classification_path.read_text(encoding="utf-8", errors="ignore")
++    # Gate 5.2-R1: approved dirty-worktree labels (any of these allows non-empty
++    # git_status_final.txt if EVERY dirty path is classified with one of them).
++    approved_labels = (
++        "ACTIVE_PARALLEL_WORK_DO_NOT_TOUCH",
++        "AMBIENT_UNRELATED_DOC_COMMIT",
++        "UNRELATED_EXTERNAL_WORK",
++        "UNRELATED_EXTERNAL_CHANGE_NEEDS_HUMAN",
++    )
++    # Always-blocking generated/runtime tokens (regardless of label).
++    always_blocking_tokens = (
++        "node_modules",
++        ".run_artifacts",
++        "raw_test_output",
++        "raw_outputs",
++        "doc_freshness_report",
++    )
+     results = []
+     for dirty_path in dirty_paths:
+         lower = dirty_path.lower()
+-        if any(token in lower for token in ["node_modules", ".run_artifacts", "raw_test_output", "raw_outputs"]):
++        if any(token in lower for token in always_blocking_tokens):
+             results.append(CheckResult(
+                 "final_git_status",
+                 False,
+-                f"{dirty_path}: generated/runtime evidence path is dirty",
++                f"{dirty_path}: generated/runtime evidence path is dirty (blocking regardless of label)",
+                 flag="DIRTY_GIT_STATUS_TASK_RELEVANT",
+             ))
+             continue
+@@ -744,19 +963,69 @@
+                 "final_git_status",
+                 False,
+                 f"{dirty_path}: missing from dirty-worktree classification",
+-                flag="DIRTY_GIT_STATUS_UNCLASSIFIED",
++                flag="DIRTY_PATH_NOT_CLASSIFIED",
+             ))
+             continue
+-        pattern = re.compile(re.escape(dirty_path) + r".*(UNRELATED_EXTERNAL_WORK|unrelated external work)", re.IGNORECASE)
+-        if not pattern.search(text):
++        # Build a regex that captures whichever label appears on the same row as the
++        # dirty path. Markdown table rows separate cells with `|`, so consume up to the
++        # next row break.
++        label_pattern = re.compile(
++            re.escape(dirty_path) + r"[^\n]*?(" + "|".join(approved_labels) + r"|UNKNOWN_REQUIRES_HUMAN|unrelated external work)",
++            re.IGNORECASE,
++        )
++        match = label_pattern.search(text)
++        if not match:
++            # Path is mentioned but not paired with any approved or known-blocker label.
+             results.append(CheckResult(
+                 "final_git_status",
+                 False,
+-                f"{dirty_path}: classification is not unrelated external work",
+-                flag="DIRTY_GIT_STATUS_TASK_RELEVANT",
++                f"{dirty_path}: classification row missing approved label",
++                flag="DIRTY_PATH_NOT_CLASSIFIED",
+             ))
+             continue
+-        results.append(CheckResult("final_git_status", True, f"{dirty_path}: classified as unrelated external work"))
++        label = match.group(1).upper().replace(" ", "_").replace("-", "_")
++        if "UNKNOWN_REQUIRES_HUMAN" in label:
++            results.append(CheckResult(
++                "final_git_status",
++                False,
++                f"{dirty_path}: classified UNKNOWN_REQUIRES_HUMAN — blocking until classification is resolved",
++                flag="UNKNOWN_REQUIRES_HUMAN_BLOCKER",
++            ))
++            continue
++        if "UNRELATED_EXTERNAL_WORK" in label:
++            results.append(CheckResult(
++                "final_git_status",
++                True,
++                f"{dirty_path}: classified UNRELATED_EXTERNAL_WORK",
++            ))
++            continue
++        if "ACTIVE_PARALLEL_WORK_DO_NOT_TOUCH" in label:
++            results.append(CheckResult(
++                "final_git_status",
++                True,
++                f"{dirty_path}: classified ACTIVE_PARALLEL_WORK_DO_NOT_TOUCH",
++            ))
++            continue
++        if "AMBIENT_UNRELATED_DOC_COMMIT" in label:
++            results.append(CheckResult(
++                "final_git_status",
++                True,
++                f"{dirty_path}: classified AMBIENT_UNRELATED_DOC_COMMIT",
++            ))
++            continue
++        if "UNRELATED_EXTERNAL_CHANGE_NEEDS_HUMAN" in label:
++            results.append(CheckResult(
++                "final_git_status",
++                True,
++                f"{dirty_path}: classified UNRELATED_EXTERNAL_CHANGE_NEEDS_HUMAN",
++            ))
++            continue
++        results.append(CheckResult(
++            "final_git_status",
++            False,
++            f"{dirty_path}: classification label {label} is not in approved set",
++            flag="DIRTY_GIT_STATUS_TASK_RELEVANT",
++        ))
+     return results
+ 
+ 
+@@ -809,6 +1078,103 @@
+     return results
+ 
+ 
++_OUTPUT_CONTRACT_VERDICT_BLOCK_RE = re.compile(
++    r"```yaml\s*\n(?P<body>.*?)```",
++    re.DOTALL | re.IGNORECASE,
++)
++
++
++def _extract_structured_output_contract_verdict(content: str) -> dict | None:
++    """Find a fenced YAML block containing the ``output_contract_consistency`` key.
++
++    Gate 5.2-R1 prefers a structured verdict block to avoid false positives from
++    negated prose like "no STALE_MILESTONE_LABEL". Returns the parsed
++    ``output_contract_consistency`` mapping, or None if no structured block is found.
++    """
++    if not YAML_AVAILABLE:
++        return None
++    for match in _OUTPUT_CONTRACT_VERDICT_BLOCK_RE.finditer(content):
++        body = match.group("body")
++        if "output_contract_consistency" not in body:
++            continue
++        try:
++            parsed = yaml.safe_load(body)
++        except yaml.YAMLError:
++            continue
++        if isinstance(parsed, dict) and isinstance(parsed.get("output_contract_consistency"), dict):
++            return parsed["output_contract_consistency"]
++    return None
++
++
++def _scan_blocking_token_with_negation(content: str, token: str) -> bool:
++    """Return True iff ``token`` appears in a non-negated, non-heading context.
++
++    Skips matches like:
++      - "no STALE_MILESTONE_LABEL"
++      - "STALE_MILESTONE_LABEL not found"
++      - "STALE_MILESTONE_LABEL: none"
++      - "STALE_MILESTONE_LABEL: absent"
++      - lines that are pure markdown headings (e.g. ``# STALE_MILESTONE_LABEL``)
++      - lines inside fenced code blocks (which usually quote the token as a label name)
++    """
++    in_code_fence = False
++    for raw_line in content.splitlines():
++        stripped = raw_line.strip()
++        if stripped.startswith("```"):
++            in_code_fence = not in_code_fence
++            continue
++        if in_code_fence:
++            continue
++        if token not in stripped:
++            continue
++        # Skip pure markdown headings.
++        if stripped.lstrip("#").strip() == token:
++            continue
++        if re.match(r"^#{1,6}\s+" + re.escape(token) + r"\s*$", stripped):
++            continue
++        # Find each occurrence and inspect the surrounding context on this line.
++        for match in re.finditer(re.escape(token), stripped):
++            start, end = match.span()
++            preceding = stripped[:start].lower()
++            following = stripped[end:].lower().lstrip()
++            # Negation prefixes within ~30 chars
++            preceding_window = preceding[-30:]
++            if re.search(r"\bno\b\s*$", preceding_window):
++                continue
++            if re.search(r"\bnot\b\s*$", preceding_window):
++                continue
++            if re.search(r"\babsent\b[^a-z]*$", preceding_window):
++                continue
++            if re.search(r"\bzero\b[^a-z]*$", preceding_window):
++                continue
++            if re.search(r"\bnone\b[^a-z]*$", preceding_window):
++                continue
++            # Negation suffixes
++            if following.startswith((
++                "not found",
++                "not detected",
++                "not present",
++                "is not",
++                "absent",
++                ": none",
++                ": absent",
++                ": not found",
++                ": no",
++                "= none",
++            )):
++                continue
++            if following.startswith(":") and re.match(r":\s*(none|absent|n\/a|not\s+found|no)\b", following):
++                continue
++            # If the line starts a markdown table header listing the token as a column
++            # name (e.g. ``| token | description |``), skip it.
++            if "|" in stripped and stripped.startswith("|"):
++                cells = [cell.strip().lower() for cell in stripped.strip("|").split("|")]
++                if token.lower() in cells and not any("detected" in cell or "found" in cell for cell in cells):
++                    continue
++            return True
++    return False
++
++
+ def check_output_contract_consistency(package_path: Path, profile: str, task_area: str) -> list[CheckResult]:
+     if profile not in FULL_PROFILES:
+         return []
+@@ -816,15 +1182,78 @@
+     na_path = package_path / "reports" / task_area / "OUTPUT_CONTRACT_CONSISTENCY_AUDIT_NOT_APPLICABLE.md"
+     if audit_path.exists():
+         content = audit_path.read_text(encoding="utf-8", errors="ignore")
+-        token = next((token for token in BLOCKING_CONTRACT_TOKENS if token in content), None)
+-        if token:
+-            return [CheckResult(
+-                "output_contract_consistency",
+-                False,
+-                f"{audit_path.relative_to(package_path).as_posix()}: blocking contradiction token {token} present",
+-                flag=token,
+-            )]
+-        return [CheckResult("output_contract_consistency", True, f"{audit_path.relative_to(package_path).as_posix()}: present with no blocking contradiction tokens")]
++        rel = audit_path.relative_to(package_path).as_posix()
++        # Gate 5.2-R1: prefer structured verdict block
++        structured = _extract_structured_output_contract_verdict(content)
++        if structured is not None:
++            verdict = str(structured.get("verdict", "")).strip().upper()
++            blocking_findings = structured.get("blocking_findings") or []
++            if not isinstance(blocking_findings, list):
++                blocking_findings = [str(blocking_findings)]
++            checked_surfaces = structured.get("checked_surfaces") or []
++            results: list[CheckResult] = []
++            if verdict not in {"PASS", "FAIL", "UNCERTAIN"}:
++                results.append(CheckResult(
++                    "output_contract_consistency",
++                    False,
++                    f"{rel}: structured verdict has unknown value '{verdict}'",
++                    flag="OUTPUT_CONTRACT_VERDICT_UNKNOWN",
++                ))
++                return results
++            if verdict in {"FAIL", "UNCERTAIN"}:
++                first_finding = blocking_findings[0] if blocking_findings else None
++                # Pick a flag matching the first known token if possible.
++                token_flag = None
++                if first_finding:
++                    upper = str(first_finding).upper()
++                    for token in BLOCKING_CONTRACT_TOKENS:
++                        if token in upper:
++                            token_flag = token
++                            break
++                results.append(CheckResult(
++                    "output_contract_consistency",
++                    False,
++                    f"{rel}: structured verdict is {verdict}; findings={blocking_findings}",
++                    flag=token_flag or ("STALE_MILESTONE_LABEL" if verdict == "FAIL" else "OUTPUT_CONTRACT_VERDICT_UNCERTAIN"),
++                ))
++                return results
++            # verdict == PASS
++            if blocking_findings:
++                results.append(CheckResult(
++                    "output_contract_consistency",
++                    False,
++                    f"{rel}: structured verdict is PASS but blocking_findings is non-empty: {blocking_findings}",
++                    flag="OUTPUT_CONTRACT_VERDICT_INCONSISTENT",
++                ))
++                return results
++            if not checked_surfaces:
++                results.append(CheckResult(
++                    "output_contract_consistency",
++                    True,
++                    f"{rel}: structured verdict PASS but checked_surfaces is empty (warn)",
++                ))
++            else:
++                results.append(CheckResult(
++                    "output_contract_consistency",
++                    True,
++                    f"{rel}: structured verdict PASS over {len(checked_surfaces)} surfaces",
++                ))
++            return results
++
++        # Fallback prose scan with negation awareness.
++        for token in BLOCKING_CONTRACT_TOKENS:
++            if _scan_blocking_token_with_negation(content, token):
++                return [CheckResult(
++                    "output_contract_consistency",
++                    False,
++                    f"{rel}: blocking contradiction token {token} present (fallback prose scan)",
++                    flag=token,
++                )]
++        return [CheckResult(
++            "output_contract_consistency",
++            True,
++            f"{rel}: present with no blocking contradiction tokens (fallback prose scan)",
++        )]
+     if na_path.exists():
+         text = na_path.read_text(encoding="utf-8", errors="ignore").strip()
+         if len(text.splitlines()) >= 2:

@@ -1,0 +1,20 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.14.3, pytest-9.0.2, pluggy-1.6.0 -- /opt/homebrew/opt/python@3.14/bin/python3.14
+cachedir: .pytest_cache
+rootdir: /Users/syedhaider/conductor/workspaces/simpleagent/denver
+configfile: pytest.ini
+plugins: anyio-4.13.0
+collecting ... collected 9 items
+
+tests/test_bridge.py::test_decide_allow_no_state_root PASSED             [ 11%]
+tests/test_bridge.py::test_decide_allow_no_active_runs PASSED            [ 22%]
+tests/test_bridge.py::test_decide_allow_implementation_state PASSED      [ 33%]
+tests/test_bridge.py::test_decide_deny_planning_state PASSED             [ 44%]
+tests/test_bridge.py::test_decide_deny_tool_closed SKIPPED (No state...) [ 55%]
+tests/test_bridge.py::test_decide_allow_completed_run PASSED             [ 66%]
+tests/test_bridge.py::test_decide_deny_unknown_state_not_in_implementation_states PASSED [ 77%]
+tests/test_bridge.py::test_http_server_allow PASSED                      [ 88%]
+tests/test_bridge.py::test_http_server_deny PASSED                       [100%]
+
+========================= 8 passed, 1 skipped in 0.28s =========================
+EXIT_CODE: 0

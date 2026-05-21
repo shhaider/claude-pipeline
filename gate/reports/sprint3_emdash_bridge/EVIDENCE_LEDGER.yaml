@@ -1,0 +1,139 @@
+# EVIDENCE_LEDGER.yaml
+# Sprint 3 — SimpleAgent emdash Bridge
+# Gate 5.4
+
+task_id: "SPRINT3-EMDASH-BRIDGE"
+task_area: "sprint3_emdash_bridge"
+created_at: "2026-05-03T00:00:00Z"
+last_updated_at: "2026-05-03T00:00:00Z"
+
+artifacts:
+  - artifact_id: E001
+    artifact_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/test_output.txt"
+    artifact_filename: "test_output.txt"
+    artifact_type: raw_test_output
+    created_at: "2026-05-03"
+    created_by_command: "pytest tests/test_bridge.py -v 2>&1; echo EXIT_CODE: $?"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "sprint3_emdash_bridge/test_output.txt"
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: ["C001"]
+    execution_context:
+      cwd: "/Users/syedhaider/conductor/workspaces/simpleagent/denver"
+      branch: "shhaider/emdash-bridge"
+      git_head: "756a5706ce0ca2a0be4c163a264f1ba109c13235"
+      package_sha256: null
+      generated_from_actual_package: null
+    notes: "Raw pytest output. EXIT_CODE: 0 present. 8 passed, 1 skipped."
+
+  - artifact_id: E002
+    artifact_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/repo_state.txt"
+    artifact_filename: "repo_state.txt"
+    artifact_type: COMMAND_OUTPUT
+    created_at: "2026-05-03"
+    created_by_command: "git branch --show-current; git rev-parse HEAD; git status --short; git log --oneline -5"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "sprint3_emdash_bridge/repo_state.txt"
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: ["C002", "C004"]
+    execution_context:
+      cwd: "/Users/syedhaider/conductor/workspaces/simpleagent/denver"
+      branch: "shhaider/emdash-bridge"
+      git_head: "756a5706ce0ca2a0be4c163a264f1ba109c13235"
+      package_sha256: null
+      generated_from_actual_package: null
+    notes: "Contains BRANCH, HEAD, STATUS, RECENT LOG sections."
+
+  - artifact_id: E003
+    artifact_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/diff.patch"
+    artifact_filename: "diff.patch"
+    artifact_type: DIFF
+    created_at: "2026-05-03"
+    created_by_command: "git diff HEAD~1 HEAD -- front_door.py"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "sprint3_emdash_bridge/diff.patch"
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: ["C003"]
+    execution_context:
+      cwd: "/Users/syedhaider/conductor/workspaces/simpleagent/denver"
+      branch: "shhaider/emdash-bridge"
+      git_head: "756a5706ce0ca2a0be4c163a264f1ba109c13235"
+      package_sha256: null
+      generated_from_actual_package: null
+    notes: "Shows front_door.py changes: +1 import line, +3 main() lines."
+
+  - artifact_id: E004
+    artifact_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/gate/ENFORCEMENT_AUTHORITY_AUDIT.md"
+    artifact_filename: "ENFORCEMENT_AUTHORITY_AUDIT.md"
+    artifact_type: OTHER
+    created_at: "2026-05-03"
+    created_by_command: "manual — produced by prior gate review cycle 0"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "sprint3_emdash_bridge/gate/ENFORCEMENT_AUTHORITY_AUDIT.md"
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: ["C005"]
+    execution_context:
+      cwd: null
+      branch: null
+      git_head: null
+      package_sha256: null
+      generated_from_actual_package: null
+    notes: "Ad-hoc enforcement audit from prior cycle — used as input. Superseded by formal ENFORCEMENT_AUTHORITY_AUDIT.md in reports/."
+
+  - artifact_id: E005
+    artifact_path: "/Users/syedhaider/conductor/workspaces/simpleagent/denver/sprints/sprint3_emdash_bridge/HANDOFF.md"
+    artifact_filename: "HANDOFF.md"
+    artifact_type: OTHER
+    created_at: "2026-05-03"
+    created_by_command: "manual — produced by implementer"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "sprint3_emdash_bridge/HANDOFF.md"
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: []
+    execution_context:
+      cwd: null
+      branch: null
+      git_head: null
+      package_sha256: null
+      generated_from_actual_package: null
+    notes: "Primary handoff document. Status: INFRASTRUCTURE_READY_NOT_WIRED."
+
+# ── Summary (filled by 15_FINAL_PACKAGE_AUDIT.md) ────────────────────────────
+summary:
+  total_artifacts: 5
+  exist_on_disk: 5
+  missing_from_disk: 0
+  included_in_package: 5
+  missing_from_package: 0
+  stale_artifacts: 0
+  audit_verdict: PASS

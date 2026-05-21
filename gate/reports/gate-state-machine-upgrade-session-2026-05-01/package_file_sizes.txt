@@ -1,0 +1,16 @@
+284 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/STALE_FILE_REGISTER.yaml
+1569 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/CYCLE_TRACKER.md
+3577 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/CLAIMS_LEDGER.yaml
+3660 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/EVIDENCE_LEDGER.yaml
+3825 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/EVIDENCE_ADEQUACY_ASSESSMENT.md
+4898 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/gate_file_inventory.txt
+5344 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/EVIDENCE_CONSISTENCY_REGISTER.md
+5485 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/COLD_REVIEW_ADJUDICATION.md
+5601 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/CURRENT_STATE.yaml
+5944 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/ENFORCEMENT_AUTHORITY_AUDIT.md
+6753 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/GATE_PROFILE_SELECTION.md
+8138 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/PACKAGE_MANIFEST.md
+9851 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/COLD_REVIEW_REQUIREMENTS_AUDIT.md
+11140 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/COLD_REVIEW_HANDOFF_COMPLETENESS_AUDIT.md
+11825 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/COLD_REVIEW_AI_FAILURE_PATTERN_AUDIT.md
+15015 /Users/syedhaider/Downloads/gate/reports/gate-state-machine-upgrade-session-2026-05-01/COLD_REVIEW_ACTIVE_PROOF_AUDIT.md

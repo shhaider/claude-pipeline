@@ -1,0 +1,11 @@
+ ROUND4_COMPLETION_AGENT3.md                   |  152 ++++
+ ROUND4_HANDOFF_BOTH_AGENTS.md                 |  207 +++++
+ front_door.py                                 |  138 ++-
+ gui/lib/call_gateway_shim.js                  |   21 +
+ gui/lib/newsroom_config_shim.js               |   11 +
+ gui/routes/front_door_route.js                |  301 ++++---
+ gui/server_local.js                           |   18 +-
+ gui/services/scribblios/draft_runners.js      |  916 ++++++++++++++++++++
+ gui/services/scribblios/outline_runners.js    | 1136 +++++++++++++++++++++++++
+ gui/services/scribblios/run_research_phase.js | 1072 +++++++++++++++++++++++
+ 10 files changed, 3857 insertions(+), 115 deletions(-)

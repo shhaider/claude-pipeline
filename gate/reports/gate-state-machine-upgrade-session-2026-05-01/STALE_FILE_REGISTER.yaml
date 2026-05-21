@@ -1,0 +1,12 @@
+task_id: "GATE-SM-UPGRADE-2026-05-01"
+task_area: "gate-state-machine-upgrade-session-2026-05-01"
+created_at: "2026-05-01T00:01:00Z"
+last_updated_at: "2026-05-01T00:01:00Z"
+
+stale_files: []
+
+summary:
+  total_stale_files: 0
+  banners_added: 0
+  banners_missing: 0
+  audit_verdict: PASS

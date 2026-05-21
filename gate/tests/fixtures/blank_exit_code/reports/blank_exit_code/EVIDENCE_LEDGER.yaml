@@ -1,0 +1,38 @@
+task_id: "fixture-blank-exit-code"
+task_area: "blank_exit_code"
+created_at: "2026-05-01T00:00:00Z"
+last_updated_at: "2026-05-01T00:00:00Z"
+
+artifacts:
+  - artifact_id: E001
+    artifact_path: "tests/fixtures/blank_exit_code/raw_test_output.txt"
+    artifact_filename: "raw_test_output.txt"
+    artifact_type: raw_test_output
+    created_at: "2026-05-01T00:00:00Z"
+    created_by_command: "npx jest tests/foo.test.js 2>&1 | tee raw_test_output.txt; echo EXIT_CODE:$? >> raw_test_output.txt"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "raw_test_output.txt"
+    verified_in_package: null
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: []
+    execution_context:
+      cwd: "/repo"
+      branch: "dev"
+      git_head: "abc123"
+      package_sha256: null
+      generated_from_actual_package: true
+    notes: "Blank EXIT_CODE fixture"
+
+summary:
+  total_artifacts: 1
+  exist_on_disk: 1
+  missing_from_disk: 0
+  included_in_package: 1
+  missing_from_package: 0
+  stale_artifacts: 0
+  audit_verdict: null

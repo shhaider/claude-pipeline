@@ -1,0 +1,11 @@
+PASS tests/foo.test.js
+Tests: 3 passed, 3 total
+Snapshots: 0 total
+Time: 2.1 s, estimated 2 s
+Ran all test suites.
+EXIT_CODE:0
+
+Error: ENOENT: no such file or directory, open '/tmp/jest_rs/perf-cache-abc123'
+    at Object.openSync (node:fs:596:3)
+    at Object.writeFileSync (node:fs:2248:35)
+    at JestCache.saveResults (/node_modules/jest-runner/build/runTest.js:482:19)

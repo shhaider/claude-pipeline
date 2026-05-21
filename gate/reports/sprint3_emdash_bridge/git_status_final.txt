@@ -1,0 +1,3 @@
+git status --short:
+git branch --show-current: shhaider/emdash-bridge
+git rev-parse HEAD: d04d7288679c6b159eb445fe4c33a002417f32d7

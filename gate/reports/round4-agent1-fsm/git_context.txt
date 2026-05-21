@@ -1,0 +1,53 @@
+=== GIT BRANCH ===
+agentostest-fsm
+
+=== GIT LOG ===
+ba9b8b9 fix(round4-agent1): rebuild Vue client — session ID persistence now in built JS
+fd2a7c8 feat(round4-agent1): real 3-stage writing pipeline, LLM code gen, provider fix, 15/15 tests
+f5e3735 docs(s-term-0): add prior-art research bundle (3 cluster scouts + synthesis)
+446c1b8 feat(round3-agent1): fallback chain fix, FSM sprints s4-s7, exec summary, Playwright fix
+4af2f67 docs(round3): completion report and handoff document
+2180ee2 feat(round3): provider_used SSE, executive summary, SQLite memory, writing persona
+9042a4d docs(s-term-0): terminal app surface audit + roadmap correction
+1b4183c feat(round2): wire Anthropic API to front_door.py, research tools, Playwright tests
+
+=== GIT DIFF STAT (HEAD) ===
+ front_door.py                                 | 408 ++++++++-------------
+ gui/lib/call_gateway_shim.js                  |  21 ++
+ gui/lib/newsroom_config_shim.js               |  11 +
+ gui/public/assets/index-BeRDYqva.js           | 192 +++++-----
+ gui/routes/front_door_route.js                | 493 +++++++++++++-------------
+ gui/server_local.js                           |  18 +-
+ gui/services/scribblios/draft_runners.js      |  16 +
+ gui/services/scribblios/outline_runners.js    |  15 +
+ gui/services/scribblios/run_research_phase.js |  14 +
+ 9 files changed, 589 insertions(+), 599 deletions(-)
+
+=== GIT STATUS ===
+On branch agentostest-fsm
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	gui/node_modules/
+	metalite_fsm/sprints/agentostest_1777701611992/
+	metalite_fsm/sprints/agentostest_1777701612/
+	metalite_fsm/sprints/agentostest_1777701769/
+	metalite_fsm/sprints/agentostest_1777701769381/
+	metalite_fsm/sprints/agentostest_1777701788796/
+	metalite_fsm/sprints/agentostest_1777701789/
+	metalite_fsm/sprints/agentostest_1777701832/
+	metalite_fsm/sprints/agentostest_1777701832527/
+	metalite_fsm/sprints/agentostest_1777701842/
+	metalite_fsm/sprints/agentostest_1777701842531/
+	metalite_fsm/sprints/agentostest_1777701851/
+	metalite_fsm/sprints/agentostest_1777701851442/
+	metalite_fsm/sprints/agentostest_1777701859/
+	metalite_fsm/sprints/agentostest_1777701859399/
+	metalite_fsm/sprints/agentostest_1777701890/
+	metalite_fsm/sprints/agentostest_1777701890038/
+	metalite_fsm/sprints/agentostest_1777701919/
+	metalite_fsm/sprints/agentostest_1777701919339/
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+=== PWD ===
+/tmp/agentos-fsm-work

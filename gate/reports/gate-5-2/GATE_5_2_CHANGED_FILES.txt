@@ -1,0 +1,113 @@
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/00_START.md and /Users/syedhaider/Downloads/gate/00_START.md differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/03_EVIDENCE_CONSISTENCY.md and /Users/syedhaider/Downloads/gate/03_EVIDENCE_CONSISTENCY.md differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/15_FINAL_PACKAGE_AUDIT.md and /Users/syedhaider/Downloads/gate/15_FINAL_PACKAGE_AUDIT.md differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/16_CANONICAL_HANDOFF_AUDIT.md and /Users/syedhaider/Downloads/gate/16_CANONICAL_HANDOFF_AUDIT.md differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/18_GATE_PROFILE_SELECTION.md and /Users/syedhaider/Downloads/gate/18_GATE_PROFILE_SELECTION.md differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/22_WARNING_OUTPUT_AUDIT.md and /Users/syedhaider/Downloads/gate/22_WARNING_OUTPUT_AUDIT.md differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/23_REQUIRED_TEST_SET_EXACTNESS.md and /Users/syedhaider/Downloads/gate/23_REQUIRED_TEST_SET_EXACTNESS.md differ
+Only in /Users/syedhaider/Downloads/gate: GATE_5_2_USAGE_RULE.md
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/GATE_PROFILES.md and /Users/syedhaider/Downloads/gate/GATE_PROFILES.md differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/GATE_PROFILE_SELECTOR.md and /Users/syedhaider/Downloads/gate/GATE_PROFILE_SELECTOR.md differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/PROOF_FILE_REQUIREMENTS.md and /Users/syedhaider/Downloads/gate/PROOF_FILE_REQUIREMENTS.md differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/REQUIRED_PROOF_FILES_BY_PROFILE.yaml and /Users/syedhaider/Downloads/gate/REQUIRED_PROOF_FILES_BY_PROFILE.yaml differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/STATE_MACHINE.md and /Users/syedhaider/Downloads/gate/STATE_MACHINE.md differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/STATE_SCHEMA.md and /Users/syedhaider/Downloads/gate/STATE_SCHEMA.md differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/TRANSITION_RULES.md and /Users/syedhaider/Downloads/gate/TRANSITION_RULES.md differ
+Only in /Users/syedhaider/Downloads/gate/reports: gate-5-2
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/blank_exit_code: EVIDENCE_LEDGER.yaml
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/blank_exit_code: PACKAGE_MANIFEST.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/blank_exit_code: raw_test_output.txt
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/blank_exit_code/reports: audit_blank_exit_code
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/blank_exit_code/reports: audit_test
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures/blank_exit_code/reports: blank_exit_code
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/blank_exit_code/reports: test
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: correct_profile_full_for_merge
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: dirty_git_status_classified_unrelated
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: dirty_git_status_task_relevant
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: dirty_git_status_unclassified
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: CLAIMS_LEDGER.yaml
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: COLD_REVIEW_ACTIVE_PROOF_AUDIT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: COLD_REVIEW_ADJUDICATION.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: COLD_REVIEW_AI_FAILURE_PATTERN_AUDIT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: COLD_REVIEW_HANDOFF_COMPLETENESS_AUDIT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: COLD_REVIEW_REQUIREMENTS_AUDIT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: CONSUMER_API_PROOF_AUDIT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: CTO_OPERATOR_INSIGHT_REVIEW.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: CURRENT_STATE.yaml
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: CYCLE_TRACKER.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: DIFF_BASE_SCOPE_AUDIT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: DIRTY_WORKTREE_RECURRENCE.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: DOWNSTREAM_CONSUMER_READINESS.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: EVIDENCE_ADEQUACY_ASSESSMENT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: EVIDENCE_CONSISTENCY_REGISTER.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: EVIDENCE_LEDGER.yaml
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: EXPORT_CHANNEL_AUDIT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: FLAKE_TIMEOUT_AUDIT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: GATE_EFFECTIVENESS_LOG.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: GATE_PACKAGE_VALIDATION_REPORT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: GATE_PROFILE_SELECTION.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: HANDOFF.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: NEXT_PROMPT_DECISION.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: PACKAGE_MANIFEST.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: PRODUCTION_CALLER_AUDIT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: PROMPT_CONTRACT_REVIEW.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: REQUIRED_TEST_SET_EXACTNESS.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: STALE_FILE_REGISTER.yaml
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: STRANDED_HELPER_AUDIT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: WARNING_OUTPUT_AUDIT.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: gate_hash.txt
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: git_status_final.txt
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: package_file_hashes.txt
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: package_file_sizes.txt
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full: raw_test_output.txt
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full/reports: audit_happy_path
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures/happy_path_gate_full/reports: happy_path_gate_full
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/happy_path_gate_full/reports: test
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/manifest_stale_self_size: EVIDENCE_LEDGER.yaml
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/manifest_stale_self_size: PACKAGE_MANIFEST.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/manifest_stale_self_size: raw_test_output.txt
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/manifest_stale_self_size/reports: audit_manifest_stale_self_size
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/manifest_stale_self_size/reports: audit_test
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures/manifest_stale_self_size/reports: manifest_stale_self_size
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/manifest_stale_self_size/reports: test
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: matching_runtime_scope_labels
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: missing_checker_report_final_mode
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_gate_source: EVIDENCE_LEDGER.yaml
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_gate_source: PACKAGE_MANIFEST.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_gate_source: raw_test_output.txt
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_gate_source/reports: audit_missing_gate_source
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_gate_source/reports: audit_test
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures/missing_gate_source/reports: missing_gate_source
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_gate_source/reports: test
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_raw_output: EVIDENCE_LEDGER.yaml
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_raw_output: PACKAGE_MANIFEST.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_raw_output: REQUIRED_TEST_SET_EXACTNESS.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_raw_output/reports: audit_missing_raw_output
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures/missing_raw_output/reports: missing_raw_output
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_raw_output/reports: test
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_required_proof_file: EVIDENCE_LEDGER.yaml
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_required_proof_file: GATE_PROFILE_SELECTION.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_required_proof_file/reports: audit_missing_required_proof_file
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_required_proof_file/reports: audit_test
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures/missing_required_proof_file/reports: missing_required_proof_file
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/missing_required_proof_file/reports: test
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/post_pass_enoent: EVIDENCE_LEDGER.yaml
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/post_pass_enoent: PACKAGE_MANIFEST.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/post_pass_enoent: raw_test_output.txt
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/post_pass_enoent/reports: audit_post_pass_enoent
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/post_pass_enoent/reports: audit_test
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures/post_pass_enoent/reports: post_pass_enoent
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/post_pass_enoent/reports: test
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: raw_has_exact_exit0
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: stale_runtime_scope_labels
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: summary_claims_exit0_raw_blank_exit_code
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: summary_claims_exit0_raw_missing_exit_code
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: warning_audit_blocking_prose
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: warning_audit_expected_non_blocking_only
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/weak_profile: GATE_PROFILE_SELECTION.md
+Only in /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/fixtures/weak_profile/reports: audit_weak
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures/weak_profile/reports: weak_profile
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: wrong_path_proof_file
+Only in /Users/syedhaider/Downloads/gate/tests/fixtures: wrong_profile_lite_for_merge
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tests/test_check_gate_package.py and /Users/syedhaider/Downloads/gate/tests/test_check_gate_package.py differ
+Files /Users/syedhaider/Downloads/gate_backup_pre_5_2_20260501T113854Z/tools/check_gate_package.py and /Users/syedhaider/Downloads/gate/tools/check_gate_package.py differ

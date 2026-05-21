@@ -1,0 +1,5 @@
+10aca27 feat(round4): real 3-stage writing pipeline, LLM code gen, IPv6 fix, 15/15 tests
+ef212cf feat(round3): fix fallback chain, provider_used SSE, executive summary, SQLite memory, writing persona
+3b44ede feat(round2): conversation memory, writing pipeline, FSM streaming, provider fallback chain
+e488906 docs: add COMPLETION_REPORT.md for agentostest functional wiring sprint
+aec211e feat(agentostest): wire research APIs, Playwright tests, and server — system now functional end-to-end

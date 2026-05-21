@@ -1,0 +1,4 @@
+PASS tests/foo.test.js
+Tests: 3 passed, 3 total
+Time: 1.0 s
+EXIT_CODE:0

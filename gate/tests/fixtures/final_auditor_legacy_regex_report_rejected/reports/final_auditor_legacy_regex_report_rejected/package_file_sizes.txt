@@ -1,0 +1,13 @@
+180 raw_test_output.txt
+1200 EVIDENCE_LEDGER.yaml
+650 CURRENT_STATE.yaml
+420 CYCLE_TRACKER.md
+890 WARNING_OUTPUT_AUDIT.md
+760 REQUIRED_TEST_SET_EXACTNESS.md
+380 GATE_PROFILE_SELECTION.md
+150 package_file_sizes.txt
+200 package_file_hashes.txt
+320 GATE_EFFECTIVENESS_LOG.md
+80 gate_hash.txt
+250 git_status_final.txt
+190 GATE_PACKAGE_VALIDATION_REPORT.md

@@ -1,0 +1,9 @@
+task_id: "fixture-happy-path"
+task_area: "happy_path_gate_full"
+created_at: "2026-05-01T00:00:00Z"
+claims: []
+summary:
+  total_claims: 0
+  verified: 0
+  failed: 0
+  audit_verdict: PASS

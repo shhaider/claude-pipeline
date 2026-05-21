@@ -1,0 +1,98 @@
+# CURRENT_STATE.yaml template
+# Copy this to reports/<task_area>/CURRENT_STATE.yaml at gate entry.
+# Fill in all fields marked [REQUIRED]. Fields marked [AUTO] are written by the gate.
+
+# ── Identity ─────────────────────────────────────────────────────────────────
+task_id: "[REQUIRED: unique task ID, e.g. ORCH-FIXES-001]"
+task_area: "[REQUIRED: directory name under reports/, e.g. agentos-ng-governance-fixes]"
+gate_run_id: "[AUTO: gate-<ISO-timestamp>]"
+gate_started_at: "[AUTO: ISO-8601]"
+last_updated_at: "[AUTO: ISO-8601]"
+
+# ── Current state ─────────────────────────────────────────────────────────────
+current_state: GATE_NOT_STARTED
+gate_completed: false
+
+# ── Gate 4.1 — Profile selection (written at GATE_PROFILE_SELECTION_COMPLETE) ─
+gate_profile: null          # GATE_LITE | GATE_STANDARD | GATE_FULL | GATE_FULL_PLUS_DOMAIN_ADDENDUM
+risk_tier: null             # D0 | D1 | D2 | D2-hot | D3 | D4
+domain_addenda: null        # list of addendum names, e.g. ["model_id_validation"]
+profile_override_required: null
+profile_selection_rationale: null
+
+# ── Cycle tracking ────────────────────────────────────────────────────────────
+cycle_count: 0
+max_cycles: 5
+
+# ── Artifact paths (fill at CYCLE_TRACKER_INITIALIZED) ───────────────────────
+claims_ledger_path: "reports/[task_area]/CLAIMS_LEDGER.yaml"
+evidence_ledger_path: "reports/[task_area]/EVIDENCE_LEDGER.yaml"
+package_manifest_path: "reports/[task_area]/PACKAGE_MANIFEST.md"
+stale_file_register_path: "reports/[task_area]/STALE_FILE_REGISTER.yaml"
+cycle_tracker_path: "reports/[task_area]/CYCLE_TRACKER.md"
+
+# ── State history (append-only) ───────────────────────────────────────────────
+state_history:
+  - state: GATE_NOT_STARTED
+    entered_at: "[AUTO: ISO-8601]"
+    exited_at: null
+
+# ── Per-cycle results ─────────────────────────────────────────────────────────
+cycles:
+  1:
+    started_at: null
+    completed_at: null
+    evidence_adequacy_decision: null
+    consistency_result: null
+    consistency_contradictions_found: null
+    enforcement_audit_applicable: null
+    enforcement_audit_result: null
+    r1_blocking: null
+    r1_nonblocking: null
+    r2_blocking: null
+    r2_nonblocking: null
+    r3_blocking: null
+    r3_nonblocking: null
+    r4_blocking: null
+    r4_nonblocking: null
+    r5_verdict: null
+    gate_verdict: null
+    blockers_autofix: null
+    blockers_human_blocked: null
+    fixes_applied: null
+    execution_context_audit_applicable: null
+    execution_context_audit_result: null
+
+    # Gate 4.1 additional audit results (null when not applicable for selected profile)
+    prompt_contract_review_result: null
+    production_caller_audit_result: null
+    consumer_api_proof_audit_result: null
+    warning_output_audit_result: null
+    required_test_set_exactness_result: null
+    manifest_finalization_audit_result: null
+    migration_runner_proof_result: null
+    implementer_prompt_lint_result: null
+    stranded_helper_audit_result: null
+    dirty_worktree_recurrence_result: null
+    work_allocation_audit_result: null
+    export_channel_audit_result: null
+    diff_base_scope_audit_result: null
+    flake_timeout_audit_result: null
+    concurrency_assumptions_audit_result: null
+    downstream_consumer_readiness_result: null
+    next_prompt_decision_result: null
+    cto_operator_insight_review_result: null
+    gate_effectiveness_log_result: null
+    final_outcome_label: null
+
+# ── Package and handoff audit results ─────────────────────────────────────────
+final_package_audit_result: null
+canonical_handoff_audit_result: null
+execution_context_audit_result: null
+
+# ── Terminal state fields (written only when gate completes) ──────────────────
+final_gate_verdict: null
+final_r5_verdict: null
+handoff_type: null
+handoff_completed_at: null
+remaining_human_blocked_blockers: null

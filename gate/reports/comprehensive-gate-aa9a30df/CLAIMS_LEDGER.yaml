@@ -1,0 +1,70 @@
+# CLAIMS_LEDGER.yaml template
+# Copy to reports/<task_area>/CLAIMS_LEDGER.yaml at CYCLE_TRACKER_INITIALIZED.
+# A claim is any assertion made in a report, handoff, or manifest that references
+# an evidence artifact. Add one entry per claim-to-evidence binding.
+# Gate step 15_FINAL_PACKAGE_AUDIT.md verifies every claim in this ledger.
+
+task_id: "GATE-aa9a30df"
+task_area: "GATE-aa9a30df"
+created_at: "2026-05-07T17:56:28Z"
+last_updated_at: "2026-05-07T17:56:28Z"
+
+claims:
+  - claim_id: C001
+    claim_text: "[Exact quoted text of the claim as it appears in the source document]"
+    source_document: "[e.g., HANDOFF.md, MANIFEST.md, CYCLE_TRACKER.md]"
+    source_section: "[e.g., 'Evidence layer', 'Git state', 'Commands and results']"
+
+    # Claim type
+    # HARD_FACT: verifiable state (file exists, test passed, SHA matches)
+    # INTERPRETATION: judgment call (quality assessment, risk rating)
+    # SCOPE_STATEMENT: what was included/excluded from scope
+    # EXECUTION_CONTEXT: claim about WHERE or IN WHAT CONTEXT a command ran
+    #   (branch, cwd, worktree, package artifact) — requires Step 17 proof
+    claim_type: HARD_FACT | INTERPRETATION | SCOPE_STATEMENT | EXECUTION_CONTEXT
+
+    # Evidence binding
+    evidence_artifact_id: "[E_ID from EVIDENCE_LEDGER.yaml, or null if no evidence artifact]"
+    evidence_artifact_path: "[Full path to the artifact that supports this claim]"
+
+    # Package inclusion check (filled by 15_FINAL_PACKAGE_AUDIT.md)
+    evidence_in_package: null          # YES | NO | NOT_APPLICABLE (after audit)
+    package_path_of_evidence: null     # Path within zip/package where artifact lives
+
+    # Verification result (filled by 15_FINAL_PACKAGE_AUDIT.md)
+    # VERIFIED: artifact exists, is in package, content supports the claim
+    # SOURCE_MISSING: artifact path does not exist on disk
+    # NOT_IN_PACKAGE: artifact exists on disk but is not included in the package
+    # SOURCE_CONTRADICTS: artifact exists but content contradicts the claim
+    # SOURCE_SILENT: artifact exists but does not address this claim
+    # LOCAL_PATH_ONLY: artifact path is local-machine-only (not portable)
+    # UNVERIFIED: not yet checked
+    verification_result: UNVERIFIED
+
+    # For HARD_FACT claims: did the verification pass?
+    hard_fact_verified: null           # true | false | null
+
+    # Execution context fields (required when claim_type: EXECUTION_CONTEXT)
+    execution_context:
+      cwd: null                      # working directory at time of command
+      branch: null                   # git branch --show-current at time of command
+      git_head: null                 # git rev-parse HEAD at time of command
+      raw_output_path: null          # path to raw output file that includes context proof
+      source_of_truth_checked: null  # e.g., "git log main", "zipinfo -1 package.zip"
+      observed_context: null         # what the raw output actually showed
+      expected_context: null         # what the claim asserts (e.g., "main")
+      context_matches: null          # true | false (observed == expected)
+
+    notes: ""
+
+# ── Summary (filled by 15_FINAL_PACKAGE_AUDIT.md) ────────────────────────────
+summary:
+  total_claims: 0
+  hard_fact_claims: 0
+  hard_fact_verified: 0
+  hard_fact_failed: 0
+  source_missing: 0
+  not_in_package: 0
+  local_path_only: 0
+  source_contradicts: 0
+  audit_verdict: null        # PASS | FAIL (FAIL if any hard_fact_verified = false)

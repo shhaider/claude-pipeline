@@ -1,0 +1,13 @@
+diff --git a/gui/public/index.html b/gui/public/index.html
+index fe26b39..91d081e 100644
+--- a/gui/public/index.html
++++ b/gui/public/index.html
+@@ -4,7 +4,7 @@
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>Scribblios</title>
+-  <script type="module" crossorigin src="/assets/index-B_Z4bsUZ.js"></script>
++  <script type="module" crossorigin src="/assets/index-BeRDYqva.js"></script>
+   <link rel="stylesheet" crossorigin href="/assets/index-DwG0p61f.css">
+ </head>
+ <body>

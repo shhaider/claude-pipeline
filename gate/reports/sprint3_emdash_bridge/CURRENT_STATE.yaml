@@ -1,0 +1,144 @@
+# CURRENT_STATE.yaml -- Sprint 3 emdash Bridge Gate Run
+# Gate 5.4
+
+# -- Identity --
+task_id: "SPRINT3-EMDASH-BRIDGE"
+task_area: "sprint3_emdash_bridge"
+gate_run_id: "gate-2026-05-03T00:00:00Z"
+gate_started_at: "2026-05-03T00:00:00Z"
+last_updated_at: "2026-05-04T00:30:00Z"
+
+# -- Current state --
+current_state: GATE_FULL_PASS_HANDOFF_COMPLETE
+gate_completed: true
+
+# -- Gate 4.1 -- Profile selection --
+gate_profile: GATE_FULL
+risk_tier: D3
+domain_addenda: null
+profile_override_required: false
+profile_selection_rationale: "Sprint 3 modifies front_door.py to unconditionally start the HTTP bridge server in main(). D3 production_wiring requires GATE_FULL."
+
+# -- Cycle tracking --
+cycle_count: 1
+max_cycles: 5
+
+# -- Artifact paths --
+claims_ledger_path: "reports/sprint3_emdash_bridge/CLAIMS_LEDGER.yaml"
+evidence_ledger_path: "reports/sprint3_emdash_bridge/EVIDENCE_LEDGER.yaml"
+package_manifest_path: "reports/sprint3_emdash_bridge/PACKAGE_MANIFEST.md"
+stale_file_register_path: "reports/sprint3_emdash_bridge/STALE_FILE_REGISTER.yaml"
+cycle_tracker_path: "reports/sprint3_emdash_bridge/CYCLE_TRACKER.md"
+
+# -- State history (append-only) --
+state_history:
+  - state: GATE_NOT_STARTED
+    entered_at: "2026-05-03T00:00:00Z"
+    exited_at: "2026-05-03T00:00:01Z"
+  - state: CYCLE_TRACKER_INITIALIZED
+    entered_at: "2026-05-03T00:00:01Z"
+    exited_at: "2026-05-03T23:56:00Z"
+  - state: GATE_PROFILE_SELECTION_COMPLETE
+    entered_at: "2026-05-03T23:56:00Z"
+    exited_at: "2026-05-03T23:57:00Z"
+  - state: EVIDENCE_ADEQUACY_COMPLETE
+    entered_at: "2026-05-03T23:57:00Z"
+    exited_at: "2026-05-03T23:59:00Z"
+  - state: EVIDENCE_CONSISTENCY_PASS
+    entered_at: "2026-05-03T23:59:00Z"
+    exited_at: "2026-05-04T00:00:00Z"
+  - state: ENFORCEMENT_AUDIT_PASS
+    entered_at: "2026-05-04T00:00:00Z"
+    exited_at: "2026-05-04T00:01:00Z"
+  - state: R1_COMPLETE
+    entered_at: "2026-05-04T00:01:00Z"
+    exited_at: "2026-05-04T00:02:00Z"
+  - state: R2_COMPLETE
+    entered_at: "2026-05-04T00:02:00Z"
+    exited_at: "2026-05-04T00:03:00Z"
+  - state: R3_COMPLETE
+    entered_at: "2026-05-04T00:03:00Z"
+    exited_at: "2026-05-04T00:10:00Z"
+  - state: R4_COMPLETE
+    entered_at: "2026-05-04T00:10:00Z"
+    exited_at: "2026-05-04T00:12:00Z"
+  - state: R5_COMPLETE
+    entered_at: "2026-05-04T00:12:00Z"
+    exited_at: "2026-05-04T00:13:00Z"
+  - state: GATE_PASS_FOR_HANDOFF
+    entered_at: "2026-05-04T00:13:00Z"
+    exited_at: "2026-05-04T00:20:00Z"
+  - state: FINAL_PACKAGE_AUDIT_PASS
+    entered_at: "2026-05-04T00:20:00Z"
+    exited_at: "2026-05-04T00:22:00Z"
+  - state: CANONICAL_HANDOFF_AUDIT_PASS
+    entered_at: "2026-05-04T00:22:00Z"
+    exited_at: "2026-05-04T00:23:00Z"
+  - state: EXECUTION_CONTEXT_AUDIT_NOT_APPLICABLE
+    entered_at: "2026-05-04T00:23:00Z"
+    exited_at: "2026-05-04T00:24:00Z"
+  - state: FINAL_PACKET_AUDITOR_PASS
+    entered_at: "2026-05-04T00:24:00Z"
+    exited_at: "2026-05-04T00:25:00Z"
+  - state: GATE_FULL_PASS_HANDOFF_COMPLETE
+    entered_at: "2026-05-04T00:25:00Z"
+    exited_at: null
+
+# -- Per-cycle results --
+cycles:
+  1:
+    started_at: "2026-05-03T23:56:00Z"
+    completed_at: "2026-05-04T00:25:00Z"
+    evidence_adequacy_decision: EVIDENCE_ALREADY_ADEQUATE
+    consistency_result: PASS
+    consistency_contradictions_found: 0
+    enforcement_audit_applicable: true
+    enforcement_audit_result: PASS
+    r1_blocking: 0
+    r1_nonblocking: 8
+    r2_blocking: 0
+    r2_nonblocking: 2
+    r3_blocking: 0
+    r3_nonblocking: 4
+    r4_blocking: 0
+    r4_nonblocking: 1
+    r5_verdict: READY_FOR_REVIEW
+    gate_verdict: PASS_FOR_HANDOFF
+    blockers_autofix: 0
+    blockers_human_blocked: 0
+    fixes_applied: null
+    execution_context_audit_applicable: false
+    execution_context_audit_result: NOT_APPLICABLE
+
+    prompt_contract_review_result: PASS
+    production_caller_audit_result: PASS
+    consumer_api_proof_audit_result: PASS
+    warning_output_audit_result: PASS
+    required_test_set_exactness_result: PASS
+    manifest_finalization_audit_result: null
+    migration_runner_proof_result: null
+    implementer_prompt_lint_result: null
+    stranded_helper_audit_result: PASS
+    dirty_worktree_recurrence_result: PASS
+    work_allocation_audit_result: CLEAR
+    export_channel_audit_result: PASS
+    diff_base_scope_audit_result: PASS
+    flake_timeout_audit_result: OK
+    concurrency_assumptions_audit_result: PASS
+    downstream_consumer_readiness_result: READY_WITH_CAVEAT
+    next_prompt_decision_result: COMPLETE
+    cto_operator_insight_review_result: COMPLETE
+    gate_effectiveness_log_result: COMPLETE
+    final_outcome_label: INFRASTRUCTURE_READY_NOT_WIRED
+
+# -- Package and handoff audit results --
+final_package_audit_result: PASS
+canonical_handoff_audit_result: PASS
+execution_context_audit_result: NOT_APPLICABLE
+
+# -- Terminal state fields --
+final_gate_verdict: PASS_FOR_HANDOFF
+final_r5_verdict: READY_FOR_REVIEW
+handoff_type: PASS
+handoff_completed_at: "2026-05-04T00:25:00Z"
+remaining_human_blocked_blockers: 0

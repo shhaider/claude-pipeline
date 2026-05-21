@@ -1,0 +1,2 @@
+ M node_modules/some-lib/index.js
+?? .run_artifacts/raw_test_output.txt
