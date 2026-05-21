@@ -1,0 +1,166 @@
+# Evidence ledger — every artifact used to support a claim in the gate package.
+
+task_id: "SYSTEM-GAP-ANALYST-001"
+task_area: "system-gap-analyst"
+created_at: "2026-05-21T00:00:00Z"
+last_updated_at: "2026-05-21T00:00:20Z"
+
+artifacts:
+  - artifact_id: E001
+    artifact_path: "reports/system-gap-analyst/raw/pytest.log"
+    artifact_filename: "pytest.log"
+    package_relative_path: "reports/system-gap-analyst/raw/pytest.log"
+    artifact_type: raw_test_output
+    created_at: "2026-05-21T00:00:05Z"
+    created_by_command: 'python3 -m pytest tests/test_system_gap_analyst.py -v > reports/system-gap-analyst/raw/pytest.log 2>&1; echo "EXIT_CODE:$?" >> reports/system-gap-analyst/raw/pytest.log'
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "reports/system-gap-analyst/raw/pytest.log"
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: [C001]
+    execution_context:
+      cwd: "/private/tmp/four-way/V3/repo"
+      branch: "V3-rerun-1779380607"
+      git_head: "6fcf87d2d36238d995f5efb69cee37cc7ebe917c"
+      package_sha256: null
+      generated_from_actual_package: true
+    notes: "Raw pytest output with EXIT_CODE:0 line for Gate 5.4 EXIT_CODE validation."
+
+  - artifact_id: E002
+    artifact_path: "src/claude_pipeline/graph.py"
+    artifact_filename: "graph.py"
+    package_relative_path: "src/claude_pipeline/graph.py"
+    artifact_type: OTHER
+    created_at: "2026-05-21T00:00:00Z"
+    created_by_command: "git commit 6fcf87d"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "src/claude_pipeline/graph.py"
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: [C002]
+    execution_context:
+      cwd: "/private/tmp/four-way/V3/repo"
+      branch: "V3-rerun-1779380607"
+      git_head: "6fcf87d2d36238d995f5efb69cee37cc7ebe917c"
+      package_sha256: null
+      generated_from_actual_package: true
+    notes: "Source file with build_graph + render_mermaid wiring of system_gap_analyst."
+
+  - artifact_id: E003
+    artifact_path: "src/claude_pipeline/nodes/system_gap_analyst.py"
+    artifact_filename: "system_gap_analyst.py"
+    package_relative_path: "src/claude_pipeline/nodes/system_gap_analyst.py"
+    artifact_type: OTHER
+    created_at: "2026-05-21T00:00:00Z"
+    created_by_command: "git commit 6fcf87d"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "src/claude_pipeline/nodes/system_gap_analyst.py"
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: [C003]
+    execution_context:
+      cwd: "/private/tmp/four-way/V3/repo"
+      branch: "V3-rerun-1779380607"
+      git_head: "6fcf87d2d36238d995f5efb69cee37cc7ebe917c"
+      package_sha256: null
+      generated_from_actual_package: true
+    notes: "Node implementation with packet builder, lens validation, JSON parsing."
+
+  - artifact_id: E004
+    artifact_path: "reports/system-gap-analyst/git_status_final.txt"
+    artifact_filename: "git_status_final.txt"
+    package_relative_path: "reports/system-gap-analyst/git_status_final.txt"
+    artifact_type: GIT_LOG
+    created_at: "2026-05-21T00:00:20Z"
+    created_by_command: "git status > reports/system-gap-analyst/git_status_final.txt"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "reports/system-gap-analyst/git_status_final.txt"
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: [C004]
+    execution_context:
+      cwd: "/private/tmp/four-way/V3/repo"
+      branch: "V3-rerun-1779380607"
+      git_head: null
+      package_sha256: null
+      generated_from_actual_package: true
+    notes: "Captured after the gate-package commit to prove clean worktree per Gate 5.4 rules."
+
+  - artifact_id: E005
+    artifact_path: "tests/test_system_gap_analyst.py"
+    artifact_filename: "test_system_gap_analyst.py"
+    package_relative_path: "tests/test_system_gap_analyst.py"
+    artifact_type: TEST_LOG
+    created_at: "2026-05-21T00:00:00Z"
+    created_by_command: "git commit 6fcf87d"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "tests/test_system_gap_analyst.py"
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: [C005]
+    execution_context:
+      cwd: "/private/tmp/four-way/V3/repo"
+      branch: "V3-rerun-1779380607"
+      git_head: "6fcf87d2d36238d995f5efb69cee37cc7ebe917c"
+      package_sha256: null
+      generated_from_actual_package: true
+    notes: "Behaviour tests for the packet builder and the plan-injection renderer."
+
+  - artifact_id: E006
+    artifact_path: "conftest.py"
+    artifact_filename: "conftest.py"
+    package_relative_path: "conftest.py"
+    artifact_type: OTHER
+    created_at: "2026-05-21T00:00:04Z"
+    created_by_command: "implementer edit"
+    cycle: 1
+    exists_on_disk: true
+    included_in_package: YES
+    package_path: "conftest.py"
+    verified_in_package: true
+    sha256: null
+    stale: false
+    stale_reason: null
+    superseded_by: null
+    referenced_by_claims: [C006]
+    execution_context:
+      cwd: "/private/tmp/four-way/V3/repo"
+      branch: "V3-rerun-1779380607"
+      git_head: null
+      package_sha256: null
+      generated_from_actual_package: true
+    notes: "Adds src/ to sys.path so pytest works without a hidden PYTHONPATH step."
+
+summary:
+  total_artifacts: 6
+  exist_on_disk: 6
+  missing_from_disk: 0
+  included_in_package: 6
+  missing_from_package: 0
+  stale_artifacts: 0
+  audit_verdict: PASS

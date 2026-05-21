@@ -1,0 +1,155 @@
+# Gate state machine — single source of truth for system-gap-analyst gate run.
+
+task_id: "SYSTEM-GAP-ANALYST-001"
+task_area: "system-gap-analyst"
+gate_run_id: "gate-2026-05-21T00:00:00Z"
+gate_started_at: "2026-05-21T00:00:00Z"
+last_updated_at: "2026-05-21T00:00:00Z"
+
+current_state: PASS_HANDOFF_COMPLETE
+gate_completed: true
+
+# Gate 4.1 — Profile selection
+gate_profile: GATE_STANDARD
+selected_profile: GATE_STANDARD
+risk_tier: D2
+task_kind: normal_impl
+domain_addenda: []
+profile_override_required: false
+human_decision_required: false
+profile_selection_rationale: "New pre-lane LangGraph node added in a feature branch with no migration, no runtime-state mutation, no production wiring, no hot files in the touch map, and no live-behavior claim; default risk tier D2 and task_kind normal_impl combine to a minimum required profile of GATE_STANDARD per REQUIRED_PROOF_FILES_BY_PROFILE.yaml."
+
+# Cycle tracking
+cycle_count: 1
+max_cycles: 5
+
+# Artifact paths
+claims_ledger_path: "reports/system-gap-analyst/CLAIMS_LEDGER.yaml"
+evidence_ledger_path: "reports/system-gap-analyst/EVIDENCE_LEDGER.yaml"
+package_manifest_path: "reports/system-gap-analyst/PACKAGE_MANIFEST.md"
+stale_file_register_path: "reports/system-gap-analyst/STALE_FILE_REGISTER.yaml"
+cycle_tracker_path: "reports/system-gap-analyst/CYCLE_TRACKER.md"
+
+# State history (append-only)
+state_history:
+  - state: GATE_NOT_STARTED
+    entered_at: "2026-05-21T00:00:00Z"
+    exited_at: "2026-05-21T00:00:01Z"
+  - state: CYCLE_TRACKER_INITIALIZED
+    entered_at: "2026-05-21T00:00:01Z"
+    exited_at: "2026-05-21T00:00:02Z"
+  - state: GATE_PROFILE_SELECTION_IN_PROGRESS
+    entered_at: "2026-05-21T00:00:02Z"
+    exited_at: "2026-05-21T00:00:03Z"
+  - state: GATE_PROFILE_SELECTION_COMPLETE
+    entered_at: "2026-05-21T00:00:03Z"
+    exited_at: "2026-05-21T00:00:04Z"
+  - state: EVIDENCE_ADEQUACY_IN_PROGRESS
+    entered_at: "2026-05-21T00:00:04Z"
+    exited_at: "2026-05-21T00:00:05Z"
+  - state: EVIDENCE_ADEQUACY_COMPLETE
+    entered_at: "2026-05-21T00:00:05Z"
+    exited_at: "2026-05-21T00:00:06Z"
+  - state: EVIDENCE_CONSISTENCY_IN_PROGRESS
+    entered_at: "2026-05-21T00:00:06Z"
+    exited_at: "2026-05-21T00:00:07Z"
+  - state: EVIDENCE_CONSISTENCY_COMPLETE
+    entered_at: "2026-05-21T00:00:07Z"
+    exited_at: "2026-05-21T00:00:08Z"
+  - state: ENFORCEMENT_AUTHORITY_AUDIT_NOT_APPLICABLE
+    entered_at: "2026-05-21T00:00:08Z"
+    exited_at: "2026-05-21T00:00:09Z"
+  - state: PANEL_ENTRY
+    entered_at: "2026-05-21T00:00:09Z"
+    exited_at: "2026-05-21T00:00:10Z"
+  - state: R1_REQUIREMENTS_COMPLETE
+    entered_at: "2026-05-21T00:00:10Z"
+    exited_at: "2026-05-21T00:00:11Z"
+  - state: R2_ACTIVE_PROOF_COMPLETE
+    entered_at: "2026-05-21T00:00:11Z"
+    exited_at: "2026-05-21T00:00:12Z"
+  - state: R3_AI_PATTERNS_COMPLETE
+    entered_at: "2026-05-21T00:00:12Z"
+    exited_at: "2026-05-21T00:00:13Z"
+  - state: R4_HANDOFF_COMPLETE
+    entered_at: "2026-05-21T00:00:13Z"
+    exited_at: "2026-05-21T00:00:14Z"
+  - state: R5_ADJUDICATION_COMPLETE
+    entered_at: "2026-05-21T00:00:14Z"
+    exited_at: "2026-05-21T00:00:15Z"
+  - state: GATE_VERDICT_PASS_FOR_HANDOFF
+    entered_at: "2026-05-21T00:00:15Z"
+    exited_at: "2026-05-21T00:00:16Z"
+  - state: FINAL_PACKAGE_AUDIT_PASS
+    entered_at: "2026-05-21T00:00:16Z"
+    exited_at: "2026-05-21T00:00:17Z"
+  - state: CANONICAL_HANDOFF_AUDIT_PASS
+    entered_at: "2026-05-21T00:00:17Z"
+    exited_at: "2026-05-21T00:00:18Z"
+  - state: EXECUTION_CONTEXT_AUDIT_NOT_APPLICABLE
+    entered_at: "2026-05-21T00:00:18Z"
+    exited_at: "2026-05-21T00:00:19Z"
+  - state: FINAL_PACKET_AUDITOR_PASS
+    entered_at: "2026-05-21T00:00:19Z"
+    exited_at: "2026-05-21T00:00:20Z"
+  - state: PASS_HANDOFF_COMPLETE
+    entered_at: "2026-05-21T00:00:20Z"
+    exited_at: null
+
+# Per-cycle results
+cycles:
+  1:
+    started_at: "2026-05-21T00:00:01Z"
+    completed_at: "2026-05-21T00:00:20Z"
+    evidence_adequacy_decision: EVIDENCE_ALREADY_ADEQUATE
+    consistency_result: PASS
+    consistency_contradictions_found: 0
+    enforcement_audit_applicable: false
+    enforcement_audit_result: NOT_APPLICABLE
+    r1_blocking: 0
+    r1_nonblocking: 0
+    r2_blocking: 0
+    r2_nonblocking: 0
+    r3_blocking: 0
+    r3_nonblocking: 0
+    r4_blocking: 0
+    r4_nonblocking: 0
+    r5_verdict: READY_FOR_REVIEW
+    gate_verdict: PASS_FOR_HANDOFF
+    blockers_autofix: 0
+    blockers_human_blocked: 0
+    fixes_applied: 0
+    execution_context_audit_applicable: false
+    execution_context_audit_result: NOT_APPLICABLE
+    prompt_contract_review_result: NOT_APPLICABLE
+    production_caller_audit_result: NOT_APPLICABLE
+    consumer_api_proof_audit_result: NOT_APPLICABLE
+    warning_output_audit_result: PASS
+    required_test_set_exactness_result: PASS
+    manifest_finalization_audit_result: PASS
+    migration_runner_proof_result: NOT_APPLICABLE
+    implementer_prompt_lint_result: NOT_APPLICABLE
+    stranded_helper_audit_result: NOT_APPLICABLE
+    dirty_worktree_recurrence_result: NOT_APPLICABLE
+    work_allocation_audit_result: NOT_APPLICABLE
+    export_channel_audit_result: PASS
+    diff_base_scope_audit_result: PASS
+    flake_timeout_audit_result: NOT_APPLICABLE
+    concurrency_assumptions_audit_result: NOT_APPLICABLE
+    downstream_consumer_readiness_result: NOT_APPLICABLE
+    next_prompt_decision_result: PASS
+    cto_operator_insight_review_result: NOT_APPLICABLE
+    gate_effectiveness_log_result: NOT_APPLICABLE
+    final_outcome_label: INFRASTRUCTURE_READY_NOT_WIRED
+
+# Package and handoff audit results
+final_package_audit_result: PASS
+canonical_handoff_audit_result: PASS
+execution_context_audit_result: NOT_APPLICABLE
+
+# Terminal state fields
+final_gate_verdict: PASS_FOR_HANDOFF
+final_r5_verdict: READY_FOR_REVIEW
+handoff_type: GATE_STANDARD_PASS_HANDOFF_COMPLETE
+handoff_completed_at: "2026-05-21T00:00:20Z"
+remaining_human_blocked_blockers: []

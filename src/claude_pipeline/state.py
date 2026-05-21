@@ -40,6 +40,27 @@ class VerifyReport(TypedDict, total=False):
     suggested_fix: str
 
 
+class GapAnalysisItem(TypedDict, total=False):
+    """One adversarial-lens gap surfaced by system_gap_analyst."""
+
+    lens: str  # one of the 8 canonical lens slugs
+    gap: str  # one-sentence problem statement
+    recommendation: str  # one-sentence concrete action
+
+
+class GapAnalysis(TypedDict, total=False):
+    """Output of the system_gap_analyst adversarial pre-lane.
+
+    Sits between research and plan; today plan_node injects the gaps
+    directly into its prompt. When the contract/planner split lands
+    (roadmap item 4) this injection moves to the contract node.
+    """
+
+    blocking_gaps: list[GapAnalysisItem]
+    advisory_gaps: list[GapAnalysisItem]
+    summary: str
+
+
 class PipelineState(TypedDict, total=False):
     """End-to-end pipeline state. Persisted to SQLite checkpoint after
     each node. Resume reloads this dict and continues from the next node.
@@ -58,6 +79,7 @@ class PipelineState(TypedDict, total=False):
     issue_body: str
     intake: IntakeDecisions
     research_brief: str  # markdown — research-node output
+    gap_analysis: GapAnalysis  # adversarial pre-lane output (blocking + advisory gaps)
     plan: list[Stage]  # ordered stages from plan node
     current_stage_idx: int  # which stage is being implemented right now
     code_summary: str  # what was changed, one paragraph

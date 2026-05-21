@@ -1,0 +1,96 @@
+# Claims ledger — every HARD_FACT claim in the gate package is bound to an artifact.
+
+task_id: "SYSTEM-GAP-ANALYST-001"
+task_area: "system-gap-analyst"
+created_at: "2026-05-21T00:00:00Z"
+last_updated_at: "2026-05-21T00:00:20Z"
+
+claims:
+  - claim_id: C001
+    claim_text: "9 pytest tests for tests/test_system_gap_analyst.py pass with EXIT_CODE:0."
+    source_document: "HANDOFF.md"
+    source_section: "Evidence layer"
+    claim_type: HARD_FACT
+    evidence_artifact_id: E001
+    evidence_artifact_path: "reports/system-gap-analyst/raw/pytest.log"
+    evidence_in_package: YES
+    package_path_of_evidence: "reports/system-gap-analyst/raw/pytest.log"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    notes: "raw/pytest.log contains '9 passed' and an exact 'EXIT_CODE:0' line as required by Gate 5.4."
+
+  - claim_id: C002
+    claim_text: "system_gap_analyst_node is wired between research and plan in both build_graph and render_mermaid."
+    source_document: "COLD_REVIEW_REQUIREMENTS_AUDIT.md"
+    source_section: "Requirements traceability"
+    claim_type: HARD_FACT
+    evidence_artifact_id: E002
+    evidence_artifact_path: "src/claude_pipeline/graph.py"
+    evidence_in_package: YES
+    package_path_of_evidence: "src/claude_pipeline/graph.py"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    notes: "graph.py adds the node and edges in both build_graph (lines ~68-78) and render_mermaid (lines ~111-119)."
+
+  - claim_id: C003
+    claim_text: "system_gap_analyst_node validates output against the 8 canonical lens slugs and drops unknown lenses with a warning rather than failing the node."
+    source_document: "COLD_REVIEW_AI_FAILURE_PATTERN_AUDIT.md"
+    source_section: "Schema-drift / silent-failure scan"
+    claim_type: HARD_FACT
+    evidence_artifact_id: E003
+    evidence_artifact_path: "src/claude_pipeline/nodes/system_gap_analyst.py"
+    evidence_in_package: YES
+    package_path_of_evidence: "src/claude_pipeline/nodes/system_gap_analyst.py"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    notes: "CANONICAL_LENS_SLUGS frozenset + _coerce_gap_items() with log.warning on unknown slug."
+
+  - claim_id: C004
+    claim_text: "Working tree is clean after the implementation commit and the gate-package commit."
+    source_document: "HANDOFF.md"
+    source_section: "Final git state"
+    claim_type: HARD_FACT
+    evidence_artifact_id: E004
+    evidence_artifact_path: "reports/system-gap-analyst/git_status_final.txt"
+    evidence_in_package: YES
+    package_path_of_evidence: "reports/system-gap-analyst/git_status_final.txt"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    notes: "Captured AFTER all commits — file reads 'nothing to commit, working tree clean'."
+
+  - claim_id: C005
+    claim_text: "_render_gap_blocks emits 'MANDATORY' / 'MUST' only when blocking_gaps is non-empty; advisory-only input renders no MANDATORY block."
+    source_document: "COLD_REVIEW_ACTIVE_PROOF_AUDIT.md"
+    source_section: "Behavioral coverage"
+    claim_type: HARD_FACT
+    evidence_artifact_id: E005
+    evidence_artifact_path: "tests/test_system_gap_analyst.py"
+    evidence_in_package: YES
+    package_path_of_evidence: "tests/test_system_gap_analyst.py"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    notes: "test_plan_injection_marks_blocking_as_mandatory + test_plan_injection_advisory_not_mandatory assert this contract."
+
+  - claim_id: C006
+    claim_text: "pytest is runnable via `python3 -m pytest -v` from a clean clone (no PYTHONPATH env var required)."
+    source_document: "DIFF_BASE_SCOPE_AUDIT.md"
+    source_section: "Repeatability"
+    claim_type: HARD_FACT
+    evidence_artifact_id: E006
+    evidence_artifact_path: "conftest.py"
+    evidence_in_package: YES
+    package_path_of_evidence: "conftest.py"
+    verification_result: VERIFIED
+    hard_fact_verified: true
+    notes: "Root-level conftest.py inserts repo/src into sys.path at collection time."
+
+summary:
+  total_claims: 6
+  hard_fact_claims: 6
+  hard_fact_verified: 6
+  hard_fact_failed: 0
+  source_missing: 0
+  not_in_package: 0
+  local_path_only: 0
+  source_contradicts: 0
+  audit_verdict: PASS
