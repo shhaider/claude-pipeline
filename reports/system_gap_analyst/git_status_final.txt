@@ -1,0 +1,31 @@
+R  reports/system_gap_analyst/R2_DESIGN.md -> reports/system_gap_analyst/COLD_REVIEW_ACTIVE_PROOF_AUDIT.md
+R  reports/system_gap_analyst/R5_ADJUDICATION.md -> reports/system_gap_analyst/COLD_REVIEW_ADJUDICATION.md
+R  reports/system_gap_analyst/R3_TESTS.md -> reports/system_gap_analyst/COLD_REVIEW_AI_FAILURE_PATTERN_AUDIT.md
+R  reports/system_gap_analyst/R4_RISKS.md -> reports/system_gap_analyst/COLD_REVIEW_HANDOFF_COMPLETENESS_AUDIT.md
+R  reports/system_gap_analyst/R1_REQUIREMENTS.md -> reports/system_gap_analyst/COLD_REVIEW_REQUIREMENTS_AUDIT.md
+ M reports/system_gap_analyst/CYCLE_TRACKER.md
+ M reports/system_gap_analyst/FINAL_PACKET_AUDITOR_REPORT.md
+ M reports/system_gap_analyst/GATE_PROFILE_SELECTION.md
+ M reports/system_gap_analyst/PACKAGE_MANIFEST.md
+?? reports/system_gap_analyst/CONSUMER_API_PROOF_AUDIT.md
+?? reports/system_gap_analyst/CTO_OPERATOR_INSIGHT_REVIEW.md
+?? reports/system_gap_analyst/DIFF_BASE_SCOPE_AUDIT.md
+?? reports/system_gap_analyst/DIRTY_WORKTREE_RECURRENCE.md
+?? reports/system_gap_analyst/DOWNSTREAM_CONSUMER_READINESS.md
+?? reports/system_gap_analyst/EVIDENCE_ADEQUACY_ASSESSMENT.md
+?? reports/system_gap_analyst/EVIDENCE_CONSISTENCY_REGISTER.md
+?? reports/system_gap_analyst/EXPORT_CHANNEL_AUDIT.md
+?? reports/system_gap_analyst/FLAKE_TIMEOUT_AUDIT.md
+?? reports/system_gap_analyst/GATE_EFFECTIVENESS_LOG.md
+?? reports/system_gap_analyst/GATE_PACKAGE_VALIDATION_REPORT.md
+?? reports/system_gap_analyst/HANDOFF.md
+?? reports/system_gap_analyst/NEXT_PROMPT_DECISION.md
+?? reports/system_gap_analyst/OUTPUT_CONTRACT_CONSISTENCY_AUDIT.md
+?? reports/system_gap_analyst/PRODUCTION_CALLER_AUDIT.md
+?? reports/system_gap_analyst/REQUIRED_TEST_SET_EXACTNESS.md
+?? reports/system_gap_analyst/STRANDED_HELPER_AUDIT.md
+?? reports/system_gap_analyst/WARNING_OUTPUT_AUDIT.md
+?? reports/system_gap_analyst/gate_hash.txt
+?? reports/system_gap_analyst/git_status_final.txt
+?? reports/system_gap_analyst/package_file_hashes.txt
+?? reports/system_gap_analyst/package_file_sizes.txt

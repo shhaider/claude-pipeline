@@ -1,6 +1,22 @@
 # 18 — Gate profile selection
 
-## Declared profile
+## Declared profile (machine-readable)
+
+```yaml
+selected_profile: GATE_FULL
+risk_tier: D2
+task_kind: prompt_authoring
+domain_addenda: []
+reason: |
+  Authors a new role prompt file (prompts/metabuilder/35_system_gap_analyst.md)
+  that will drive an LLM call. Per Gate 5.4, prompt_authoring task_kind mandates
+  minimum GATE_FULL. Risk tier D2 (not D3) because the change is additive: no
+  existing nodes mutate, no production runtime is rewired, plan_node degrades
+  gracefully when contract is absent, and no migrations/secrets/auth/hot-paths
+  are touched.
+```
+
+## Declared profile (human-readable)
 
 | field | value |
 |---|---|

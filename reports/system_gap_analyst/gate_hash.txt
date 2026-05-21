@@ -1,0 +1,12 @@
+gate_version: 5.4
+gate_path: /tmp/four-way/gate
+gate_folder_sha256: 76097cb2198d5812d16b378de12182e3a8928bd4904eddcd3620823e6b93b71b
+computed_at: 2026-05-21
+computation: |
+  cd /tmp/four-way/gate
+  find . -type f -not -path "./logs/*" -not -path "./reports/*" -not -path "*/__pycache__/*" \
+    | sort | xargs shasum -a 256 | shasum -a 256 | awk '{print $1}'
+note: |
+  Hash covers every file under the gate folder except logs/, reports/, and __pycache__/
+  (transient / per-run artifacts that would make every run's hash unique).
+  This proves which version of the gate framework was consulted for this run.
