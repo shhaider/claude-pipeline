@@ -38,12 +38,26 @@ The pipeline only gains complexity when an A/B test shows the new version matche
 ## Pipeline phases (MVP)
 
 ```
-gh issue → INTAKE → RESEARCH → PLAN → CODE → VERIFY → PR
-              ↑                            │
-              └───── (verify fail loops back, max 2 retries) ──┘
+gh issue → INTAKE → RESEARCH → SYSTEM_GAP_ANALYST → PLAN → CODE → VERIFY → PR
+              ↑                                                       │
+              └────────── (verify fail loops back, max 2 retries) ────┘
 ```
 
 Each phase is a LangGraph node. Each node shells out to `claude --print` with a focused prompt and a slice of pipeline state. State persists to a SQLite checkpoint after every node — pipelines that crash mid-flight can be resumed.
+
+### Adversarial gap-analysis pre-lane
+
+`SYSTEM_GAP_ANALYST` is an adversarial pre-lane that runs between research
+and plan. It is a faithful port of metabuilder's `system_gap_analyst` role
+(see `docs/metabuilder-port-spec.md` §plan-3a). It takes the intake +
+research output and applies **8 named lenses** —
+infrastructure-assumed-but-not-mentioned, silent-failure, cross-cutting-
+concerns, next-stage-prerequisites, YAGNI-cut, fake-completion,
+architecture-smell, developer-contract-completeness — to surface gaps the
+plan must cover. Blocking gaps become MANDATORY ADDITIONAL DELIVERABLES
+in the plan node's prompt; advisory gaps are passed as suggestions. The
+intent is to catch silent-failure modes and unstated infrastructure
+assumptions BEFORE the plan locks them in.
 
 ## CLI
 
@@ -70,6 +84,7 @@ src/claude_pipeline/
 ├── nodes/          # one file per phase
 │   ├── intake.py
 │   ├── research.py
+│   ├── system_gap_analyst.py  # adversarial pre-lane (8 lenses)
 │   ├── plan.py
 │   ├── code.py
 │   ├── verify.py
@@ -77,7 +92,9 @@ src/claude_pipeline/
 ├── claude.py       # subprocess wrapper for `claude --print`
 └── cli.py          # entry point
 
-prompts/            # prompt templates per node
+prompts/
+└── metabuilder/    # verbatim role prompts ported from metabuilder
+    └── 35_system_gap_analyst.md
 runs/               # per-invocation state + checkpoint DB
 tests/              # pytest suite
 ```
