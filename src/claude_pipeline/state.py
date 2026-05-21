@@ -63,6 +63,10 @@ class PipelineState(TypedDict, total=False):
     code_summary: str  # what was changed, one paragraph
     verify: VerifyReport
 
+    # Adversarial pre-lane (system_gap_analyst → contract_writer).
+    gap_analysis: dict  # produced by system_gap_analyst_node: {blocking_gaps, advisory_gaps, summary}
+    contract: dict  # produced by contract_node: locked-scope deliverables list
+
     # Terminal
     pr_url: str
     pr_number: int
