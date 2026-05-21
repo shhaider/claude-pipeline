@@ -1,0 +1,11 @@
+task_area: system_gap_analyst
+issue: 9
+branch: V2-rerun-1779380607
+base_commit: 994ed6a
+status: gate_package_assembly
+walk_mode: GATE_FULL
+selected_profile: GATE_FULL
+risk_tier: D2
+task_kind: prompt_authoring
+last_gate_verdict: FAIL  # prior judge run
+current_cycle: 2

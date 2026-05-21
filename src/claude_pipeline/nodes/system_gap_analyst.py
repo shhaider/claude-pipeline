@@ -12,7 +12,15 @@ Port of metabuilder's `system_gap_analyst` role:
   - user packet:   build_gap_analysis_packet (Python port of
                    `buildGapAnalysisPacket`)
 
-Tier 3 (Opus). Temperature 0.2. Max tokens 8192. Fresh session (no resume).
+Tier 3 (Opus). Fresh session (no resume).
+
+Known limitation: the spec calls for temperature=0.2 and max_tokens=8192.
+The `claude --print` CLI does not expose temperature or max_tokens as
+flags (verified via `claude --help`); only `--model` and
+`--append-system-prompt` are settable. Those parameters are therefore
+implicit (whatever the model's defaults are in agent-loop mode). Filed
+as a follow-up upgrade: route through the Anthropic SDK directly for
+roles that need parameter control.
 """
 
 from __future__ import annotations
@@ -188,7 +196,7 @@ def system_gap_analyst_node(state: PipelineState) -> dict:
     packet = build_gap_analysis_packet(state)
     system_prompt = _load_system_prompt()
 
-    log.info("system_gap_analyst: invoking claude (Opus, T=0.2, 8192 tok)")
+    log.info("system_gap_analyst: invoking claude (Opus)")
     result = run_claude(
         packet,
         cwd=state.get("worktree_path"),
@@ -197,10 +205,6 @@ def system_gap_analyst_node(state: PipelineState) -> dict:
         extra_args=[
             "--append-system-prompt",
             system_prompt,
-            "--max-tokens",
-            "8192",
-            "--temperature",
-            "0.2",
         ],
     )
     log.info(

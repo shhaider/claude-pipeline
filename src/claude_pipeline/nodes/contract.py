@@ -158,20 +158,19 @@ def _coerce_deliverable(raw: object) -> ContractDeliverable | None:
 
 
 def contract_node(state: PipelineState) -> dict:
-    """Run the contract_writer pass. Tier 3 (Opus), T=0.2, 8192 tok."""
+    """Run the contract_writer pass. Tier 3 (Opus).
+
+    Note: spec calls for T=0.2 / max_tokens=8192. The `claude --print`
+    CLI does not expose those as flags (verified via `claude --help`);
+    they are implicit until we route through the SDK directly.
+    """
     packet = build_contract_packet(state)
-    log.info("contract: invoking claude (Opus, T=0.2, 8192 tok)")
+    log.info("contract: invoking claude (Opus)")
     result = run_claude(
         packet,
         cwd=state.get("worktree_path"),
         timeout_s=600,
         model="claude-opus-4-7",
-        extra_args=[
-            "--max-tokens",
-            "8192",
-            "--temperature",
-            "0.2",
-        ],
     )
     log.info(
         "contract: claude returned (%.1fs, cost=$%.4f, turns=%d)",
