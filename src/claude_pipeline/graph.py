@@ -1,9 +1,15 @@
 """LangGraph wiring for the pipeline.
 
-Builds the state machine: intake -> research -> plan -> code -> verify
-   -> (loop back to code if FAIL, max 2 retries) -> pr
+Builds the state machine:
+    intake -> research -> system_gap_analyst -> plan -> code -> verify
+       -> (loop back to code if FAIL, max 2 retries) -> pr
 
 Persists state to SQLite after every node so crashes can resume.
+
+`system_gap_analyst` is an adversarial pre-lane between research and
+the planner (which absorbs metabuilder's contract_writer role). It
+applies 8 named lenses to find unstated dependencies and silent-failure
+modes that the plan would otherwise miss.
 """
 
 from __future__ import annotations
@@ -20,6 +26,7 @@ from claude_pipeline.nodes.intake import intake_node
 from claude_pipeline.nodes.plan import plan_node
 from claude_pipeline.nodes.pr import pr_node
 from claude_pipeline.nodes.research import research_node
+from claude_pipeline.nodes.system_gap_analyst import system_gap_analyst_node
 from claude_pipeline.nodes.verify import MAX_RETRIES, should_retry, verify_node
 from claude_pipeline.state import PipelineState
 
@@ -57,6 +64,7 @@ def build_graph(checkpoint_db: Path | str):
     g = StateGraph(PipelineState)
     g.add_node("intake", intake_node)
     g.add_node("research", research_node)
+    g.add_node("system_gap_analyst", system_gap_analyst_node)
     g.add_node("plan", plan_node)
     g.add_node("code", code_node)
     g.add_node("verify", verify_node)
@@ -65,7 +73,8 @@ def build_graph(checkpoint_db: Path | str):
 
     g.add_edge(START, "intake")
     g.add_edge("intake", "research")
-    g.add_edge("research", "plan")
+    g.add_edge("research", "system_gap_analyst")
+    g.add_edge("system_gap_analyst", "plan")
     g.add_edge("plan", "code")
     # After code: more stages? loop back to code; else verify.
     g.add_conditional_edges(
@@ -98,6 +107,7 @@ def render_mermaid() -> str:
     g = StateGraph(PipelineState)
     g.add_node("intake", intake_node)
     g.add_node("research", research_node)
+    g.add_node("system_gap_analyst", system_gap_analyst_node)
     g.add_node("plan", plan_node)
     g.add_node("code", code_node)
     g.add_node("verify", verify_node)
@@ -105,7 +115,8 @@ def render_mermaid() -> str:
     g.add_node("pr", pr_node)
     g.add_edge(START, "intake")
     g.add_edge("intake", "research")
-    g.add_edge("research", "plan")
+    g.add_edge("research", "system_gap_analyst")
+    g.add_edge("system_gap_analyst", "plan")
     g.add_edge("plan", "code")
     g.add_conditional_edges(
         "code",
