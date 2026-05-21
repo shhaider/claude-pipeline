@@ -38,10 +38,12 @@ The pipeline only gains complexity when an A/B test shows the new version matche
 ## Pipeline phases (MVP)
 
 ```
-gh issue → INTAKE → RESEARCH → PLAN → CODE → VERIFY → PR
-              ↑                            │
-              └───── (verify fail loops back, max 2 retries) ──┘
+gh issue → INTAKE → RESEARCH → system_gap_analyst → CONTRACT → PLAN → CODE → VERIFY → PR
+                                                                         ↑              │
+                                                                         └─ (retry) ────┘
 ```
+
+After research, the pipeline runs an adversarial gap analysis pass (`system_gap_analyst`) before any contract is written. It applies 8 named lenses on Tier-3 Opus — infrastructure-assumed-but-not-mentioned, silent-failure, cross-cutting-concerns, next-stage-prerequisites, YAGNI-cut, fake-completion, architecture-smell, and developer-contract-completeness — to find unstated dependencies and architectural smells that a well-intentioned planner would miss. Blocking gaps are injected as MANDATORY ADDITIONAL DELIVERABLES into the contract packet; advisory gaps are surfaced as non-mandatory hints. This closes the framing-quality gap between raw research output and the contract the planner works from.
 
 Each phase is a LangGraph node. Each node shells out to `claude --print` with a focused prompt and a slice of pipeline state. State persists to a SQLite checkpoint after every node — pipelines that crash mid-flight can be resumed.
 
