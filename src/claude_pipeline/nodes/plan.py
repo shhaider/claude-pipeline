@@ -27,7 +27,7 @@ INTAKE:
 RESEARCH BRIEF:
 {research_brief}
 
-ISSUE #{issue_number}: {issue_title}
+{gap_analysis_block}ISSUE #{issue_number}: {issue_title}
 
 Produce a JSON array of stages. Each stage is one focused unit of work that an implementer can complete in a single coding session.
 
@@ -54,10 +54,55 @@ Begin:
 """
 
 
+def _format_gap_analysis_block(gap_analysis: dict) -> str:
+    """Render the gap_analysis dict as a block injected into the plan
+    prompt. Blocking gaps become MANDATORY ADDITIONAL DELIVERABLES (the
+    contract MUST cover them); advisory gaps appear as suggestions only.
+
+    Returns "" if gap_analysis is missing or empty so the prompt is
+    unchanged on runs where the gap analyst didn't produce anything.
+    """
+    if not gap_analysis:
+        return ""
+    blocking = gap_analysis.get("blocking_gaps") or []
+    advisory = gap_analysis.get("advisory_gaps") or []
+    summary = gap_analysis.get("summary") or ""
+    if not blocking and not advisory and not summary:
+        return ""
+
+    lines = ["ADVERSARIAL GAP ANALYSIS:"]
+    if summary:
+        lines.append(f"Summary: {summary}")
+    if blocking:
+        lines.append("")
+        lines.append("MANDATORY ADDITIONAL DELIVERABLES (every blocking gap")
+        lines.append("below MUST be covered by at least one stage in your plan):")
+        for i, gap in enumerate(blocking, start=1):
+            lens = gap.get("lens", "unknown")
+            what = gap.get("gap", "")
+            rec = gap.get("recommendation", "")
+            lines.append(f"  [BLOCKING-{i}] ({lens}) {what}")
+            if rec:
+                lines.append(f"      recommendation: {rec}")
+    if advisory:
+        lines.append("")
+        lines.append("Advisory gaps (suggestions, not requirements):")
+        for i, gap in enumerate(advisory, start=1):
+            lens = gap.get("lens", "unknown")
+            what = gap.get("gap", "")
+            rec = gap.get("recommendation", "")
+            lines.append(f"  [advisory-{i}] ({lens}) {what}")
+            if rec:
+                lines.append(f"      suggestion: {rec}")
+    lines.append("")
+    return "\n".join(lines) + "\n"
+
+
 def plan_node(state: PipelineState) -> dict:
     prompt = PROMPT_TEMPLATE.format(
         intake_json=json.dumps(state.get("intake", {}), indent=2),
         research_brief=state.get("research_brief", "(no research brief)"),
+        gap_analysis_block=_format_gap_analysis_block(state.get("gap_analysis", {})),
         issue_number=state["issue_number"],
         issue_title=state.get("issue_title", ""),
     )
