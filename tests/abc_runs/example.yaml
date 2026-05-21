@@ -1,0 +1,37 @@
+# Example round configuration for the ABC harness.
+#
+# Run with:
+#   PYTHONPATH=src python3 -m claude_pipeline.cli abc-run tests/abc_runs/example.yaml
+#
+# The round name defaults to the YAML filename stem ("example" here). Pass
+# --round to override.
+#
+# Each issue lists the GitHub issue number, the tier (0/1/2/3 per
+# software-dev SKILL.md), and a freeform notes string the harness logs but
+# does not parse.
+#
+# tier definitions (per ~/.claude/skills/software-dev/SKILL.md Step 0):
+#   0 — trivial (typo, one-line fix, doc update)
+#   1 — bounded single-function trivial fix
+#   2 — small multi-file feature
+#   3 — new subsystem / cross-cutting
+
+repo: shhaider/claude-pipeline
+
+issues:
+  - { number: 13, tier: 0, notes: "single-line typo fix" }
+  - { number: 14, tier: 1, notes: "single function trivial fix" }
+  - { number: 15, tier: 2, notes: "small multi-file feature" }
+  - { number: 16, tier: 3, notes: "new subsystem" }
+
+variants: [A, B, C]
+
+# The gate folder lives at the claude-pipeline repo root.
+gate_folder: /Users/syedhaider/Projects/claude-pipeline/gate
+
+# Persistent SQLite DB. One DB across all rounds — rounds are
+# distinguished by the `round` column.
+db_path: /Users/syedhaider/Projects/claude-pipeline/runs/abc-scores.db
+
+# Per-variant timeout in seconds. Tier-3 issues may need this raised.
+variant_timeout_s: 1800

@@ -242,6 +242,42 @@ def cmd_graph(_args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_abc_run(args: argparse.Namespace) -> int:
+    """Run one round of the ABC harness against a YAML config."""
+    from claude_pipeline.abc_harness import load_round_config, run_round
+
+    cfg_path = Path(args.config)
+    if not cfg_path.exists():
+        print(f"config not found: {cfg_path}", file=sys.stderr)
+        return 4
+
+    cfg = load_round_config(cfg_path, round_name=args.round)
+    log.info(
+        "abc-run starting: round=%s repo=%s issues=%d variants=%s db=%s",
+        cfg.round_name, cfg.repo, len(cfg.issues), cfg.variants, cfg.db_path,
+    )
+    inserted = run_round(cfg)
+    print(f"\nabc-run finished: inserted {len(inserted)} rows into {cfg.db_path}")
+    print(f"Render the scorecard with: claude-pipeline abc-scorecard {cfg.round_name} "
+          f"--db {cfg.db_path}")
+    return 0
+
+
+def cmd_abc_scorecard(args: argparse.Namespace) -> int:
+    """Render the scorecard for one round of the ABC harness."""
+    from claude_pipeline.abc_harness import render_scorecard
+
+    db_path = Path(args.db) if args.db else (RUNS_DIR / "abc-scores.db")
+    if not db_path.exists():
+        print(f"DB not found: {db_path}", file=sys.stderr)
+        return 4
+
+    md_out_dir = Path(args.md_out_dir) if args.md_out_dir else (RUNS_DIR / "abc-scores")
+    text = render_scorecard(db_path, args.round, md_out_dir=md_out_dir)
+    print(text)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="claude-pipeline")
     parser.add_argument("-v", "--verbose", action="store_true")
@@ -263,6 +299,21 @@ def main(argv: list[str] | None = None) -> int:
 
     p_g = sub.add_parser("graph", help="print the pipeline graph as Mermaid")
     p_g.set_defaults(fn=cmd_graph)
+
+    p_abc = sub.add_parser("abc-run", help="run one ABC harness round from a YAML config")
+    p_abc.add_argument("config", help="path to the round YAML config")
+    p_abc.add_argument("--round", default=None,
+                       help="override round name (defaults to yaml basename)")
+    p_abc.set_defaults(fn=cmd_abc_run)
+
+    p_score = sub.add_parser("abc-scorecard", help="render the scorecard for a round")
+    p_score.add_argument("round", help="round name to render")
+    p_score.add_argument("--db", default=None,
+                         help="path to the SQLite DB (default: runs/abc-scores.db)")
+    p_score.add_argument("--md-out-dir", default=None,
+                         help="directory for the markdown rendering "
+                              "(default: runs/abc-scores)")
+    p_score.set_defaults(fn=cmd_abc_scorecard)
 
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
