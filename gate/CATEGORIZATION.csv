@@ -1,0 +1,87 @@
+filename,category,one_line_description,suggested_implementation
+00_START.md,orchestration,Gate runner entry point and state machine setup,Python state machine bootstrap in gate_runner.py (no LLM)
+01_EVIDENCE_ADEQUACY.md,llm-judged,Reviews whether evidence packets are sufficient for downstream gates,Single Claude call returning {decision: ALREADY_ADEQUATE|UPGRADE_REQUIRED|BLOCKED, gaps: []}
+02_TEST_AND_EVIDENCE_PLAN.md,hybrid,Builds the test/evidence plan when adequacy says upgrade needed,Python scaffolds plan file from template + Claude call to fill gap rows
+03_EVIDENCE_CONSISTENCY.md,hybrid,8 consistency checks: SHA/diff/path/staleness/contradiction,Python runs the mechanical checks (SHA match git status diff equality) + Claude judges narrative contradictions
+04_PANEL_ENTRY.md,orchestration,Cycle counter check + transition into 5-reviewer panel,Python reads CYCLE_TRACKER and gates entry (no LLM)
+05_R1_REQUIREMENTS.md,llm-judged,Reviewer 1 builds requirements traceability matrix,Single Claude call with R1 role prompt returns RTM rows + BLOCKING flags
+06_R2_ACTIVE_PROOF.md,llm-judged,Reviewer 2 classifies proof type per behavior (active path vs source-only),Single Claude call with R2 role prompt
+07_R3_AI_PATTERNS.md,llm-judged,Reviewer R3 looks for common AI-error patterns,Single Claude call with role prompt + catalog of patterns
+08_R4_HANDOFF.md,llm-judged,Reviewer 4 checks handoff/manifest/evidence completeness,Single Claude call with R4 role prompt
+09_R5_ADJUDICATION.md,llm-judged,Reviewer 5 synthesizes R1-R4 reports into the only verdict,Single Claude call with R5 role prompt returning READY_FOR_REVIEW|NEEDS_CORRECTION|BLOCKED|STOP_AND_REDESIGN
+10_GATE_VERDICT.md,deterministic,Maps R5 verdict + enforcement override to gate verdict,Python lookup table (R5 verdict + enforcement_audit_result) -> gate verdict
+11_FIX_CYCLE.md,hybrid,Fix loop: enumerate AUTOFIX blockers and dispatch to implementer,Python enumerates blockers from adjudication.yaml + Claude call to implement fixes
+12_PASS_HANDOFF.md,deterministic,Terminal success state - writes PASS_HANDOFF_COMPLETE to CURRENT_STATE,Python writes terminal state + verifies all 5 prerequisite states recorded
+13_BLOCKED_HANDOFF.md,deterministic,Terminal blocked state - writes BLOCKED_HANDOFF_COMPLETE,Python writes terminal state + serializes remaining_human_blocked_blockers
+14_ENFORCEMENT_AUTHORITY_AUDIT.md,hybrid,Audits that authority claims match enforcement code,grep + AST check in Python for protected actions + Claude judges whether detected-only vs prevented
+15_FINAL_PACKAGE_AUDIT.md,deterministic,Mechanical audit of manifest vs package contents,Python compares MANIFEST claims to file listing + tools/check_gate_package.py --final
+16_CANONICAL_HANDOFF_AUDIT.md,deterministic,Verifies all status-bearing documents agree on one verdict,Python collects PASS/FAIL/BLOCKED tokens across docs and checks consistency
+17_EXECUTION_CONTEXT_AUDIT.md,deterministic,Verifies branch/HEAD/worktree claims match actual git state,Python parses git log + git rev-parse + cross-checks against claimed context
+18_GATE_PROFILE_SELECTION.md,hybrid,First step: select gate profile from risk tier + task kind,Python lookup table on risk_tier+task_kind + Claude fallback when prompt-derived tier is ambiguous
+19_PROMPT_CONTRACT_REVIEW.md,llm-judged,Reviews implementer prompt for ambiguity/scope/overclaim risks,Single Claude call applying contract-review checks to the prompt text
+20_PRODUCTION_CALLER_ACTIVE_PATH_AUDIT.md,deterministic,Proves a production caller exists for newly exported symbols,grep for imports across non-test code + Python verdict (PRODUCTION_WIRED|TEST_HELPER_ONLY|STRANDED)
+21_CONSUMER_API_PROOF_AUDIT.md,hybrid,Verifies tests exercise the consumer API not raw DB/file probes,Python AST scan of test files for API calls + Claude judges whether test path matches consumer path
+22_WARNING_OUTPUT_AUDIT.md,deterministic,Scans raw outputs for warnings that contradict success claims,Python regex on raw outputs for EXIT_CODE/WARN/ENOENT/fallback tokens
+23_REQUIRED_TEST_SET_EXACTNESS.md,deterministic,Confirms exact required test files were run and EXIT_CODE:0 present in raw output,Python diff between required-test list and observed-test list + regex on raw output
+24_MIGRATION_RUNNER_PROOF.md,hybrid,Proves migrations were applied by the real runner not manually,Python runs migration runner --dry-run + Claude judges whether observed registry state matches claims
+25_IMPLEMENTER_PROMPT_LINT.md,deterministic,Lints the implementer prompt for invalid snippets/broken refs,Python regex + tree-sitter syntax check on prompt code blocks + path resolution check
+26_STRANDED_HELPER_UNUSED_EXPORT_AUDIT.md,deterministic,Detects helper functions defined but never imported by production,grep across worktree for imports + Python verdict per symbol
+27_DIRTY_WORKTREE_RECURRENCE_AUDIT.md,deterministic,Checks git status is clean and recurring dirty paths flagged,subprocess git status --porcelain + cross-ref against prior gate runs ledger
+28_WORK_ALLOCATION_AUDIT.md,deterministic,Checks for concurrent agent conflicts on hot files,Python cross-references claim-system ledger against current task file-touch map
+29_EXPORT_CHANNEL_AUDIT.md,deterministic,Verifies files exist inside exported zip not just on host,Python unzip listing vs manifest expected files
+30_DIFF_BASE_SCOPE_AUDIT.md,deterministic,Verifies diff base commit is correct and scope is bounded,Python git merge-base + git diff --stat + comparison to file-touch map
+31_FLAKE_TIMEOUT_LOAD_AUDIT.md,llm-judged,Reviews tests for flake/timeout/load sensitivity smells,Single Claude call inspecting test code + raw outputs for sleep/setTimeout/retry patterns
+32_CONCURRENCY_ASSUMPTIONS_AUDIT.md,llm-judged,Reviews code for concurrency-safety overclaims,Single Claude call applying concurrency lens to changed files
+33_DOWNSTREAM_CONSUMER_READINESS_AUDIT.md,llm-judged,Reviews whether next-phase consumer can start given current state,Single Claude call comparing current API/schema/exports to next-phase prompt
+34_NEXT_PROMPT_DECISION.md,llm-judged,Decides whether next-phase prompt needs amendment after this task,Single Claude call returning {next_prompt: use_as_is|amend|replace, reasoning}
+35_CTO_OPERATOR_INSIGHT_REVIEW.md,llm-judged,Outer-frame review on project trajectory and meta-lessons,Single Claude call with CTO/operator role prompt
+36_GATE_EFFECTIVENESS_LOG.md,deterministic,Post-run log of what the gate caught/missed for tuning,Python appends row to gate/GATE_EFFECTIVENESS_REGISTER.md from CURRENT_STATE history
+37_FINAL_PACKET_AUDITOR.md,hybrid,Independent context-light final auditor after canonical handoff,Python runs check_gate_package.py --final + fresh Claude call with structured YAML output
+ARTIFACT_LIFECYCLE_TIMING_AUDIT_TEMPLATE.md,template,Scaffold for artifact lifecycle timing audit output,Read-only template loaded by audit step (no execution)
+CLAIMS_LEDGER_TEMPLATE.yaml,template,YAML schema for HARD_FACT claim entries with artifact pointers,Read-only template (no execution)
+CONCURRENCY_ASSUMPTIONS_AUDIT_TEMPLATE.md,template,Scaffold for concurrency audit output report,Read-only template loaded by 32_CONCURRENCY_ASSUMPTIONS_AUDIT
+CONSUMER_API_PROOF_AUDIT_TEMPLATE.md,template,Scaffold for consumer-API proof audit output,Read-only template loaded by 21_CONSUMER_API_PROOF_AUDIT
+CTO_OPERATOR_INSIGHT_REVIEW_TEMPLATE.md,template,Scaffold for CTO/operator insight review output,Read-only template loaded by 35_CTO_OPERATOR_INSIGHT_REVIEW
+CYCLE_TRACKER_TEMPLATE.md,template,Scaffold for per-cycle tracker file,Read-only template; runner instantiates one per task_area
+DIFF_BASE_SCOPE_AUDIT_TEMPLATE.md,template,Scaffold for diff base/scope audit output,Read-only template loaded by 30_DIFF_BASE_SCOPE_AUDIT
+DIRTY_WORKTREE_RECURRENCE_TEMPLATE.md,template,Scaffold for dirty worktree recurrence audit output,Read-only template loaded by 27_DIRTY_WORKTREE_RECURRENCE_AUDIT
+DOWNSTREAM_CONSUMER_READINESS_TEMPLATE.md,template,Scaffold for downstream consumer readiness audit output,Read-only template loaded by 33_DOWNSTREAM_CONSUMER_READINESS_AUDIT
+ENFORCEMENT_EXAMPLES.md,reference,Reference scenarios for enforcement-authority anti-patterns,Loaded as context by 14_ENFORCEMENT_AUTHORITY_AUDIT (not executed)
+EVIDENCE_LEDGER_TEMPLATE.yaml,template,YAML schema for evidence artifacts including raw_test_output entries,Read-only template (no execution)
+EXPORT_CHANNEL_AUDIT_TEMPLATE.md,template,Scaffold for export channel audit output,Read-only template loaded by 29_EXPORT_CHANNEL_AUDIT
+FINAL_PACKET_AUDITOR_REPORT_TEMPLATE.md,template,Scaffold for state-37 final packet auditor structured YAML report,Read-only template loaded by 37_FINAL_PACKET_AUDITOR
+FLAKE_TIMEOUT_LOAD_AUDIT_TEMPLATE.md,template,Scaffold for flake/timeout/load audit output,Read-only template loaded by 31_FLAKE_TIMEOUT_LOAD_AUDIT
+GATE_4_1_USAGE_GUIDE.md,reference,Usage guide for Gate 4.1 features (legacy reference),Documentation file (not executed)
+GATE_5_1_USAGE_GUIDE.md,reference,Usage guide for Gate 5.1 hardening,Documentation file (not executed)
+GATE_5_1_USAGE_RULE.md,reference,Hard rules for Gate 5.1,Documentation file (not executed)
+GATE_5_2_USAGE_RULE.md,reference,Hard rules for Gate 5.2,Documentation file (not executed)
+GATE_5_3_USAGE_RULE.md,reference,Hard rules for Gate 5.3 (Final Packet Auditor ordering),Documentation file (not executed)
+GATE_5_4_USAGE_RULE.md,reference,Hard rules for Gate 5.4 (current version),Documentation file (not executed)
+GATE_EFFECTIVENESS_LOG_TEMPLATE.md,template,Scaffold for per-task gate effectiveness log,Read-only template loaded by 36_GATE_EFFECTIVENESS_LOG
+GATE_PROFILE_SELECTION_TEMPLATE.md,template,Scaffold for gate profile selection output with required metadata,Read-only template loaded by 18_GATE_PROFILE_SELECTION
+GATE_PROFILE_SELECTOR.md,reference,Definitions of risk tiers task kinds and hot file lists,Loaded as lookup data by 18_GATE_PROFILE_SELECTION (not executed)
+GATE_PROFILES.md,reference,Required states per profile (LITE/STANDARD/FULL/FULL_PLUS),Loaded as lookup data by gate_runner profile dispatch (not executed)
+IMPLEMENTER_PROMPT_LINT_TEMPLATE.md,template,Scaffold for implementer prompt lint output,Read-only template loaded by 25_IMPLEMENTER_PROMPT_LINT
+MANIFEST_FINALIZATION_AUDIT_TEMPLATE.md,template,Scaffold for manifest finalization audit output,Read-only template loaded by 15_FINAL_PACKAGE_AUDIT
+MIGRATION_RUNNER_PROOF_TEMPLATE.md,template,Scaffold for migration runner proof output,Read-only template loaded by 24_MIGRATION_RUNNER_PROOF
+NEXT_PROMPT_DECISION_TEMPLATE.md,template,Scaffold for next-prompt decision output,Read-only template loaded by 34_NEXT_PROMPT_DECISION
+OUTPUT_CONTRACT_CONSISTENCY_AUDIT_TEMPLATE.md,template,Scaffold for output-contract consistency audit output,Read-only template loaded by 03_EVIDENCE_CONSISTENCY
+PACKAGE_MANIFEST_TEMPLATE.md,template,Scaffold for package manifest with file listing,Read-only template (no execution)
+PRODUCTION_CALLER_ACTIVE_PATH_AUDIT_TEMPLATE.md,template,Scaffold for production caller/active path audit output,Read-only template loaded by 20_PRODUCTION_CALLER_ACTIVE_PATH_AUDIT
+PROMPT_CONTRACT_REVIEW_TEMPLATE.md,template,Scaffold for prompt contract review output,Read-only template loaded by 19_PROMPT_CONTRACT_REVIEW
+PROOF_FILE_REQUIREMENTS.md,reference,Defines which proof files each profile requires (exact-path rule),Loaded as lookup data by check_gate_package + 15_FINAL_PACKAGE_AUDIT
+README.md,reference,Port notes and category legend for v0.4 prep,Documentation file (not executed)
+REQUIRED_PROOF_FILES_BY_PROFILE.yaml,reference,YAML mapping of profile to required proof file relative paths,Loaded as lookup data by tools/check_gate_package.py
+REQUIRED_TEST_SET_EXACTNESS_TEMPLATE.md,template,Scaffold for required test set exactness audit output,Read-only template loaded by 23_REQUIRED_TEST_SET_EXACTNESS
+SCRIPT_SPEC_check_gate_package.md,reference,Spec for the standalone check_gate_package.py validator,Documentation for tools/check_gate_package.py (not executed)
+SELF_TEST_GATE_STATE_MACHINE.md,reference,14 questions verifying the state machine catches known failures,Documentation file (regression test corpus reference)
+STALE_FILE_POLICY.md,reference,Policy for handling superseded files in packages,Loaded as policy by 15_FINAL_PACKAGE_AUDIT and 16_CANONICAL_HANDOFF_AUDIT
+STALE_FILE_REGISTER_TEMPLATE.yaml,template,YAML schema for stale file register entries,Read-only template (no execution)
+STATE_FILE_TEMPLATE.yaml,template,Skeleton for CURRENT_STATE.yaml per task_area,Read-only template instantiated by 00_START
+STATE_MACHINE.md,reference,Master state list with allowed states,Documentation; runner uses STATE_SCHEMA + TRANSITION_RULES for enforcement
+STATE_MACHINE_EXAMPLES.md,reference,Worked examples of state machine transitions,Documentation file (not executed)
+STATE_SCHEMA.md,reference,Schema definition of CURRENT_STATE.yaml,Loaded as schema by gate_runner state writer/reader
+STRANDED_HELPER_UNUSED_EXPORT_AUDIT_TEMPLATE.md,template,Scaffold for stranded helper audit output,Read-only template loaded by 26_STRANDED_HELPER_UNUSED_EXPORT_AUDIT
+TRANSITION_RULES.md,reference,Allowed-from list for every state transition (forbidden transitions are blockers),Loaded as transition table by gate_runner._next_state
+WARNING_OUTPUT_AUDIT_TEMPLATE.md,template,Scaffold for warning output audit findings,Read-only template loaded by 22_WARNING_OUTPUT_AUDIT
+WORK_ALLOCATION_AUDIT_TEMPLATE.md,template,Scaffold for work allocation/hot file conflict audit,Read-only template loaded by 28_WORK_ALLOCATION_AUDIT
