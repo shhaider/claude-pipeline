@@ -35,15 +35,19 @@ Where metabuilder has an analog of a node, use metabuilder's prompts, decision l
 
 The pipeline only gains complexity when an A/B test shows the new version matches or beats the prior version on the same issue. The first baseline is a single `claude --print` call with the issue body. After that, each version is the baseline for the next.
 
-## Pipeline phases (MVP)
+## Pipeline phases
 
 ```
-gh issue → INTAKE → RESEARCH → PLAN → CODE → VERIFY → PR
-              ↑                            │
-              └───── (verify fail loops back, max 2 retries) ──┘
+gh issue → INTAKE → RESEARCH → SYSTEM_GAP_ANALYST → CONTRACT → PLAN → CODE → VERIFY → PR
+                                                                          ↑      │
+                                                                          └──── (verify fail loops back, max 2 retries) ──┘
 ```
 
 Each phase is a LangGraph node. Each node shells out to `claude --print` with a focused prompt and a slice of pipeline state. State persists to a SQLite checkpoint after every node — pipelines that crash mid-flight can be resumed.
+
+### Adversarial gap analysis (`system_gap_analyst`)
+
+Sitting between **research** and **contract**, the `system_gap_analyst` is an adversarial pre-pass ported from metabuilder. Its job is to find what is missing, unstated, or quietly broken in the framing before the contract is locked in. It walks 8 named lenses — *infrastructure-assumed-but-not-mentioned, silent-failure, cross-cutting-concerns, next-stage-prerequisites, YAGNI-cut, fake-completion, architecture-smell, developer-contract-completeness* — and emits a structured `{blocking_gaps, advisory_gaps, summary}` document. Blocking gaps are injected into the contract_writer's user packet as **MANDATORY ADDITIONAL DELIVERABLES** that the contract must cover; advisory gaps ride along as suggestions only. The pass runs as a fresh Tier 3 / Opus session at temperature 0.2 so its judgment isn't anchored to anything earlier in the run.
 
 ## CLI
 
@@ -70,6 +74,8 @@ src/claude_pipeline/
 ├── nodes/          # one file per phase
 │   ├── intake.py
 │   ├── research.py
+│   ├── system_gap_analyst.py
+│   ├── contract.py
 │   ├── plan.py
 │   ├── code.py
 │   ├── verify.py
