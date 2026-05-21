@@ -8,6 +8,8 @@ v0.1.0 (in flight). MVP scope: take a GitHub issue, run it through intake → re
 
 Designed to **self-bootstrap**: once v0.1 is working, point it at this repo and feed it issues that upgrade itself toward the full metabuilder-equivalent pipeline.
 
+Commits and PR bodies produced by the pipeline include a `Co-Authored-By: claude-pipeline <noreply@anthropic.com>` trailer for attribution.
+
 ## Stack
 
 - Python 3.11+
