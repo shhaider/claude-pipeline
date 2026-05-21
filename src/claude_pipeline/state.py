@@ -62,6 +62,7 @@ class PipelineState(TypedDict, total=False):
     current_stage_idx: int  # which stage is being implemented right now
     code_summary: str  # what was changed, one paragraph
     verify: VerifyReport
+    gap_analysis: dict
 
     # Terminal
     pr_url: str

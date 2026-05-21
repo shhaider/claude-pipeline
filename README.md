@@ -38,12 +38,21 @@ The pipeline only gains complexity when an A/B test shows the new version matche
 ## Pipeline phases (MVP)
 
 ```
-gh issue → INTAKE → RESEARCH → PLAN → CODE → VERIFY → PR
-              ↑                            │
-              └───── (verify fail loops back, max 2 retries) ──┘
+gh issue → INTAKE → RESEARCH → SYSTEM_GAP_ANALYST → PLAN → CODE → VERIFY → PR
+                        │              │                               │
+                research --> system_gap_analyst --> plan               │
+                        └──────────── (verify fail loops back, max 2 retries) ──┘
 ```
 
 Each phase is a LangGraph node. Each node shells out to `claude --print` with a focused prompt and a slice of pipeline state. State persists to a SQLite checkpoint after every node — pipelines that crash mid-flight can be resumed.
+
+### Adversarial gap pass
+
+`system_gap_analyst` is a Tier-3 (Opus) adversarial node that runs between `research` and `plan`. It applies 8 lenses to surface gap analysis issues before planning locks in scope:
+
+`infrastructure-assumed-but-not-mentioned` · `silent-failure` · `cross-cutting-concerns` · `next-stage-prerequisites` · `YAGNI-cut` · `fake-completion` · `architecture-smell` · `developer-contract-completeness`
+
+The node returns a `gap_analysis` state slice containing `blocking_gaps` and `advisory_gaps`. Downstream, `build_contract_packet` injects `blocking_gaps` as **MANDATORY ADDITIONAL DELIVERABLES** into the contract packet (each gap must appear in at least one stage's acceptance criteria) and `advisory_gaps` as suggestions. This ensures adversarial findings are contractually enforced before the plan is written, not discovered during verify.
 
 ## CLI
 
@@ -70,6 +79,8 @@ src/claude_pipeline/
 ├── nodes/          # one file per phase
 │   ├── intake.py
 │   ├── research.py
+│   ├── system_gap_analyst.py   # adversarial Tier-3 gap pass (8 lenses)
+│   ├── contract.py             # contract packet builder with gap injection
 │   ├── plan.py
 │   ├── code.py
 │   ├── verify.py
@@ -78,6 +89,8 @@ src/claude_pipeline/
 └── cli.py          # entry point
 
 prompts/            # prompt templates per node
+  metabuilder/
+    35_system_gap_analyst.md    # role prompt for the adversarial gap pass
 runs/               # per-invocation state + checkpoint DB
 tests/              # pytest suite
 ```
