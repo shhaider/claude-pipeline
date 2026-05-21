@@ -1,0 +1,33 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	intake(intake)
+	research(research)
+	system_gap_analyst(system_gap_analyst)
+	contract(contract)
+	plan(plan)
+	code(code)
+	verify(verify)
+	retry_code(retry_code)
+	pr(pr)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> intake;
+	code -.-> verify;
+	contract --> plan;
+	intake --> research;
+	plan --> code;
+	research --> system_gap_analyst;
+	retry_code --> code;
+	system_gap_analyst --> contract;
+	verify -.-> pr;
+	verify -.-> retry_code;
+	pr --> __end__;
+	code -.-> code;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
+

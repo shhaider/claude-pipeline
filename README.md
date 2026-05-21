@@ -38,12 +38,16 @@ The pipeline only gains complexity when an A/B test shows the new version matche
 ## Pipeline phases (MVP)
 
 ```
-gh issue → INTAKE → RESEARCH → PLAN → CODE → VERIFY → PR
-              ↑                            │
-              └───── (verify fail loops back, max 2 retries) ──┘
+gh issue → INTAKE → RESEARCH → SYSTEM_GAP_ANALYST → CONTRACT → PLAN → CODE → VERIFY → PR
+              ↑                                                              │
+              └────────── (verify fail loops back, max 2 retries) ───────────┘
 ```
 
 Each phase is a LangGraph node. Each node shells out to `claude --print` with a focused prompt and a slice of pipeline state. State persists to a SQLite checkpoint after every node — pipelines that crash mid-flight can be resumed.
+
+### Adversarial gap pass
+
+`SYSTEM_GAP_ANALYST` runs BEFORE the contract is written. It applies eight named adversarial lenses to the framing (intake + research) — **infrastructure-assumed-but-not-mentioned, silent-failure, cross-cutting-concerns, next-stage-prerequisites, YAGNI-cut, fake-completion, architecture-smell, developer-contract-completeness** — and produces a structured report of `blocking_gaps` and `advisory_gaps`. The contract node injects blocking gaps as MANDATORY ADDITIONAL DELIVERABLES (every blocking gap MUST be covered by a deliverable) and advisory gaps as non-required suggestions. Without this pass, unstated infrastructure assumptions and silent-failure modes go straight from the issue into the plan. The role prompt is ported verbatim from metabuilder; see `prompts/metabuilder/35_system_gap_analyst.md` and `docs/metabuilder-port-spec.md`.
 
 ## CLI
 
@@ -70,6 +74,8 @@ src/claude_pipeline/
 ├── nodes/          # one file per phase
 │   ├── intake.py
 │   ├── research.py
+│   ├── system_gap_analyst.py  # adversarial 8-lens pre-pass
+│   ├── contract.py            # deliverables contract (consumes gap_analysis)
 │   ├── plan.py
 │   ├── code.py
 │   ├── verify.py
@@ -77,7 +83,7 @@ src/claude_pipeline/
 ├── claude.py       # subprocess wrapper for `claude --print`
 └── cli.py          # entry point
 
-prompts/            # prompt templates per node
+prompts/metabuilder/ # verbatim role prompts ported from metabuilder
 runs/               # per-invocation state + checkpoint DB
 tests/              # pytest suite
 ```
