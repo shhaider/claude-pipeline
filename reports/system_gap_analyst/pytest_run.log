@@ -1,0 +1,24 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.14.3, pytest-9.0.2, pluggy-1.6.0 -- /opt/homebrew/opt/python@3.14/bin/python3.14
+cachedir: .pytest_cache
+rootdir: /private/tmp/four-way/V1/repo
+configfile: pyproject.toml
+plugins: langsmith-0.8.5, anyio-4.13.0
+collecting ... collected 13 items
+
+tests/test_system_gap_analyst.py::test_packet_contains_all_eight_lenses PASSED [  7%]
+tests/test_system_gap_analyst.py::test_packet_includes_intake_and_research PASSED [ 15%]
+tests/test_system_gap_analyst.py::test_packet_includes_codebase_anchor_from_research_output PASSED [ 23%]
+tests/test_system_gap_analyst.py::test_codebase_anchor_falls_back_to_research_brief PASSED [ 30%]
+tests/test_system_gap_analyst.py::test_blocking_gaps_injected_into_contract_packet_as_mandatory PASSED [ 38%]
+tests/test_system_gap_analyst.py::test_contract_packet_no_mandatory_header_when_no_blocking_gaps PASSED [ 46%]
+tests/test_system_gap_analyst.py::test_contract_packet_works_without_gap_analysis PASSED [ 53%]
+tests/test_system_gap_analyst.py::test_advisory_gaps_present_but_not_marked_mandatory PASSED [ 61%]
+tests/test_system_gap_analyst.py::test_gap_summary_surfaced_in_contract_packet PASSED [ 69%]
+tests/test_system_gap_analyst.py::test_role_prompt_file_exists_and_names_all_lenses PASSED [ 76%]
+tests/test_system_gap_analyst.py::test_node_module_exposes_callable PASSED [ 84%]
+tests/test_system_gap_analyst.py::test_graph_includes_gap_analyst_between_research_and_contract PASSED [ 92%]
+tests/test_system_gap_analyst.py::test_normalize_gap_analysis_tolerates_alt_keys PASSED [100%]
+
+============================== 13 passed in 0.14s ==============================
+EXIT_CODE:0

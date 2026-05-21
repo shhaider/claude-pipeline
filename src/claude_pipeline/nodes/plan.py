@@ -19,7 +19,7 @@ from claude_pipeline.state import PipelineState, Stage
 
 log = logging.getLogger(__name__)
 
-PROMPT_TEMPLATE = """You are a software-task planner. You have intake decisions and a research brief. Output a sequence of implementation stages.
+PROMPT_TEMPLATE = """You are a software-task planner. You have intake decisions, a research brief, and (when present) a structured contract. Output a sequence of implementation stages.
 
 INTAKE:
 {intake_json}
@@ -27,7 +27,7 @@ INTAKE:
 RESEARCH BRIEF:
 {research_brief}
 
-ISSUE #{issue_number}: {issue_title}
+{contract_block}ISSUE #{issue_number}: {issue_title}
 
 Produce a JSON array of stages. Each stage is one focused unit of work that an implementer can complete in a single coding session.
 
@@ -54,10 +54,26 @@ Begin:
 """
 
 
+def _format_contract_block(state: PipelineState) -> str:
+    contract = state.get("contract") or {}
+    deliverables = contract.get("deliverables") or []
+    if not deliverables:
+        return ""
+    lines = [
+        "MANDATORY CONTRACT — every deliverable below MUST be covered by at least one stage:",
+    ]
+    for d in deliverables:
+        lines.append(
+            f"  - [{d.get('id', '?')}] {d.get('name', '')}: {d.get('description', '')}"
+        )
+    return "\n".join(lines) + "\n\n"
+
+
 def plan_node(state: PipelineState) -> dict:
     prompt = PROMPT_TEMPLATE.format(
         intake_json=json.dumps(state.get("intake", {}), indent=2),
         research_brief=state.get("research_brief", "(no research brief)"),
+        contract_block=_format_contract_block(state),
         issue_number=state["issue_number"],
         issue_title=state.get("issue_title", ""),
     )
