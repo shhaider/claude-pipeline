@@ -13,9 +13,8 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 
-from claude_pipeline.claude import run_claude
+from claude_pipeline.claude import extract_json, run_claude
 from claude_pipeline.state import PipelineState, Stage
 
 log = logging.getLogger(__name__)
@@ -55,24 +54,6 @@ Begin:
 """
 
 
-def _extract_json_array(text: str) -> list:
-    """Pull the first balanced JSON array out of Claude's stdout."""
-    cleaned = re.sub(r"^\s*```(?:json)?\s*", "", text)
-    cleaned = re.sub(r"\s*```\s*$", "", cleaned)
-    depth = 0
-    start = -1
-    for i, ch in enumerate(cleaned):
-        if ch == "[":
-            if depth == 0:
-                start = i
-            depth += 1
-        elif ch == "]":
-            depth -= 1
-            if depth == 0 and start >= 0:
-                return json.loads(cleaned[start : i + 1])
-    raise ValueError(f"no balanced JSON array found in: {text[:200]!r}")
-
-
 def plan_node(state: PipelineState) -> dict:
     prompt = PROMPT_TEMPLATE.format(
         intake_json=json.dumps(state.get("intake", {}), indent=2),
@@ -86,13 +67,14 @@ def plan_node(state: PipelineState) -> dict:
         cwd=state["worktree_path"],
         timeout_s=300,
     )
-    try:
-        raw_stages = _extract_json_array(result.stdout)
-    except (ValueError, json.JSONDecodeError) as e:
-        return {
-            "error": f"plan parse failed: {e}; stdout head: {result.stdout[:300]}",
-        }
+    log.info("plan: claude returned (%.1fs, cost=$%.4f)", result.duration_s, result.cost_usd)
 
+    try:
+        raw_stages = extract_json(result.text)
+    except (ValueError, json.JSONDecodeError) as e:
+        return {"error": f"plan parse failed: {e}; text head: {result.text[:300]}"}
+    if not isinstance(raw_stages, list):
+        return {"error": f"plan: expected JSON array, got {type(raw_stages).__name__}"}
     if not raw_stages:
         return {"error": "plan: claude returned an empty stage list"}
 

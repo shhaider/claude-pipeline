@@ -45,11 +45,8 @@ Rules:
 - If you must touch a file NOT in the touch map, do it but note it clearly at the end.
 - DO NOT commit yet. The pipeline's commit node handles that.
 - DO NOT run pytest / npm test unless the description asks you to.
-- When you're done, OUTPUT a one-paragraph summary of what changed and why.
 
-Begin work. End by printing:
-
-CODE-STAGE-DONE: <one-paragraph summary>
+When done, finish with one paragraph summarising what you changed and why. No special markers needed — your final message body is what the pipeline records as the stage summary.
 """
 
 
@@ -92,19 +89,17 @@ def code_node(state: PipelineState) -> dict:
     result = run_claude(
         prompt,
         cwd=state["worktree_path"],
-        timeout_s=1800,  # Heavy node — 30 min ceiling
+        timeout_s=1800,  # 30 min ceiling for the heavy node
+    )
+    log.info(
+        "code stage %d done (%.1fs, cost=$%.4f, turns=%d)",
+        idx + 1,
+        result.duration_s,
+        result.cost_usd,
+        result.num_turns,
     )
 
-    # Extract the trailing summary (or use stdout tail if absent)
-    out = result.stdout
-    marker = "CODE-STAGE-DONE:"
-    if marker in out:
-        summary = out.split(marker, 1)[1].strip()[:2000]
-    else:
-        summary = out[-500:].strip()
-        log.warning("code: stage %d did not emit CODE-STAGE-DONE marker", idx + 1)
-
-    log.info("code stage %d done: %s", idx + 1, summary[:80])
+    summary = result.text.strip()[-2000:] or "(no summary returned)"
     return {
         "code_summary": summary,
         "current_stage_idx": idx + 1,

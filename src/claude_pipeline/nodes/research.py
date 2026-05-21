@@ -1,8 +1,8 @@
 """Research node: given the intake decisions, produce a concise
 research brief that grounds the plan in the actual codebase.
 
-Claude Code does the reading itself (it has Read/Grep/Bash tools inside
-the worktree). Output is a markdown brief: what the code currently looks
+Claude Code does the reading itself (it has Read/Grep/Glob/Bash tools
+inside the worktree). Output is a markdown brief: what the code looks
 like, where the touch points are, what conventions exist.
 """
 
@@ -35,13 +35,13 @@ Your job: produce a 1-2 page research brief in markdown that the PLAN node will 
 1. **Current code shape** — what exists today in the files this task touches. List the relevant files with one-line descriptions.
 2. **Touch points** — the specific functions / classes / modules the implementation will need to modify.
 3. **Existing conventions** — code patterns, naming, test style, that the new code must match.
-4. **Hidden constraints** — anything in the code that complicates the obvious approach (existing API contracts, foreign callers, governance gates).
-5. **Recommended approach** — one paragraph: based on the actual code (not abstract reasoning), what's the cleanest way to satisfy the acceptance criteria?
+4. **Hidden constraints** — anything in the code that complicates the obvious approach.
+5. **Recommended approach** — one paragraph: based on the actual code, what's the cleanest way to satisfy the acceptance criteria?
 
 Constraints:
 - Read code; do NOT speculate. If you can't find the relevant code, say so.
 - DO NOT write any code yet. This node is read-only.
-- Keep it concise — the next node (PLAN) needs to read this in one pass.
+- Keep it concise.
 
 Output the markdown brief directly. No preamble.
 """
@@ -67,10 +67,16 @@ def research_node(state: PipelineState) -> dict:
     result = run_claude(
         prompt,
         cwd=state["worktree_path"],
-        timeout_s=600,  # Reading can take a while on large repos
+        timeout_s=600,
     )
-    brief = result.stdout.strip()
+    brief = result.text.strip()
     if not brief:
         return {"error": "research: claude returned empty brief"}
-    log.info("research done: brief length %d chars", len(brief))
+    log.info(
+        "research done: brief length %d chars (%.1fs, cost=$%.4f, turns=%d)",
+        len(brief),
+        result.duration_s,
+        result.cost_usd,
+        result.num_turns,
+    )
     return {"research_brief": brief, "error": None}

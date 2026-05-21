@@ -1,11 +1,8 @@
 """Intake node: take the raw GitHub issue and produce 7 structured
 decisions about what kind of work this is.
 
-Mirrors metabuilder's `autonomous_software_resolver.js` in shape:
-task_type, complexity_tier, scope_plan, risk_flags, right_thing_answer,
-acceptance_criteria, wiring_plan.
-
-Future enhancement (filed against this repo as an upgrade issue):
+Mirrors metabuilder's `autonomous_software_resolver.js` in shape.
+Future enhancement (filed as an upgrade issue against this repo):
 multi-turn clarification when confidence is low.
 """
 
@@ -13,10 +10,8 @@ from __future__ import annotations
 
 import json
 import logging
-import re
-from pathlib import Path
 
-from claude_pipeline.claude import run_claude
+from claude_pipeline.claude import extract_json, run_claude
 from claude_pipeline.state import IntakeDecisions, PipelineState
 
 log = logging.getLogger(__name__)
@@ -51,26 +46,6 @@ JSON only. Begin:
 """
 
 
-def _extract_json(text: str) -> dict:
-    """Pull the first balanced JSON object out of Claude's stdout."""
-    # Strip code fences if Claude added them despite instructions
-    cleaned = re.sub(r"^\s*```(?:json)?\s*", "", text)
-    cleaned = re.sub(r"\s*```\s*$", "", cleaned)
-    # Find first {...} block by counting braces
-    depth = 0
-    start = -1
-    for i, ch in enumerate(cleaned):
-        if ch == "{":
-            if depth == 0:
-                start = i
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0 and start >= 0:
-                return json.loads(cleaned[start : i + 1])
-    raise ValueError(f"no balanced JSON object found in: {text[:200]!r}")
-
-
 def intake_node(state: PipelineState) -> dict:
     """Read issue, return state slice with intake decisions."""
     prompt = PROMPT_TEMPLATE.format(
@@ -85,15 +60,18 @@ def intake_node(state: PipelineState) -> dict:
         cwd=state.get("worktree_path"),
         timeout_s=300,
     )
-    try:
-        raw = _extract_json(result.stdout)
-    except (ValueError, json.JSONDecodeError) as e:
-        log.exception("intake: claude returned unparseable output")
-        return {
-            "error": f"intake parse failed: {e}; stdout head: {result.stdout[:300]}",
-        }
+    log.info("intake: claude returned (%.1fs, cost=$%.4f)", result.duration_s, result.cost_usd)
 
-    # Validate required fields are present
+    try:
+        raw = extract_json(result.text)
+    except (ValueError, json.JSONDecodeError) as e:
+        log.exception("intake: result.text was unparseable")
+        return {
+            "error": f"intake parse failed: {e}; text head: {result.text[:300]}",
+        }
+    if not isinstance(raw, dict):
+        return {"error": f"intake: expected JSON object, got {type(raw).__name__}"}
+
     required = {
         "task_type",
         "complexity_tier",
@@ -105,9 +83,7 @@ def intake_node(state: PipelineState) -> dict:
     }
     missing = required - set(raw.keys())
     if missing:
-        return {
-            "error": f"intake missing required fields: {sorted(missing)}",
-        }
+        return {"error": f"intake missing required fields: {sorted(missing)}"}
 
     decisions: IntakeDecisions = {
         "task_type": str(raw["task_type"]),

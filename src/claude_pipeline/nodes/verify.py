@@ -6,17 +6,15 @@ For MVP this is a single Claude call that:
 2. Checks acceptance criteria against the diff
 3. Returns a structured VerifyReport
 
-If FAIL and retry_count < MAX_RETRIES, the graph loops back to CODE
-with a guidance string from the report.
+If FAIL and retry_count < MAX_RETRIES, the graph loops back to CODE.
 """
 
 from __future__ import annotations
 
 import json
 import logging
-import re
 
-from claude_pipeline.claude import run_claude
+from claude_pipeline.claude import extract_json, run_claude
 from claude_pipeline.state import PipelineState, VerifyReport
 
 log = logging.getLogger(__name__)
@@ -35,7 +33,7 @@ IMPLEMENTATION SUMMARY:
 {code_summary}
 
 Your job, in order:
-1. Run the project's tests. Detect the test command yourself (look for `pytest`, `npm test`, `jest`, `cargo test`, `go test`, or whatever fits the repo). Use `timeout --kill-after=5 600` to bound any test run.
+1. Run the project's tests. Detect the test command yourself (look for `pytest`, `npm test`, `jest`, `cargo test`, `go test`, or whatever fits the repo). Wrap any long-running test command in `timeout --kill-after=5 600`.
 2. Read `git diff --stat` and `git diff` to see what changed.
 3. For each acceptance criterion, decide PASS or FAIL based on the code + test output.
 
@@ -57,23 +55,6 @@ Begin:
 """
 
 
-def _extract_json(text: str) -> dict:
-    cleaned = re.sub(r"^\s*```(?:json)?\s*", "", text)
-    cleaned = re.sub(r"\s*```\s*$", "", cleaned)
-    depth = 0
-    start = -1
-    for i, ch in enumerate(cleaned):
-        if ch == "{":
-            if depth == 0:
-                start = i
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0 and start >= 0:
-                return json.loads(cleaned[start : i + 1])
-    raise ValueError(f"no balanced JSON object found in: {text[:200]!r}")
-
-
 def verify_node(state: PipelineState) -> dict:
     intake = state.get("intake", {})
     research = state.get("research_brief", "")
@@ -89,14 +70,17 @@ def verify_node(state: PipelineState) -> dict:
     result = run_claude(
         prompt,
         cwd=state["worktree_path"],
-        timeout_s=900,  # Tests + analysis
+        timeout_s=900,
     )
+    log.info("verify: claude returned (%.1fs, cost=$%.4f, turns=%d)", result.duration_s, result.cost_usd, result.num_turns)
+
     try:
-        raw = _extract_json(result.stdout)
+        raw = extract_json(result.text)
     except (ValueError, json.JSONDecodeError) as e:
-        return {
-            "error": f"verify parse failed: {e}; stdout head: {result.stdout[:300]}",
-        }
+        return {"error": f"verify parse failed: {e}; text head: {result.text[:300]}"}
+    if not isinstance(raw, dict):
+        return {"error": f"verify: expected JSON object, got {type(raw).__name__}"}
+
     report: VerifyReport = {
         "passed": bool(raw.get("passed", False)),
         "summary": str(raw.get("summary", "")),
@@ -112,14 +96,13 @@ def verify_node(state: PipelineState) -> dict:
 
 
 def should_retry(state: PipelineState) -> str:
-    """LangGraph conditional edge function. Returns the name of the next
-    node. Called after verify_node."""
+    """LangGraph conditional edge function. Returns next node name."""
     verify = state.get("verify", {})
     if verify.get("passed", False):
         return "pr"
     retry = state.get("retry_count", 0)
     if retry >= MAX_RETRIES:
         log.warning("verify failed and max retries (%d) reached — proceeding to pr anyway", MAX_RETRIES)
-        return "pr"  # Even on failure, open the PR — operator decides
+        return "pr"
     log.info("verify failed, looping back to code (retry %d/%d)", retry + 1, MAX_RETRIES)
     return "retry_code"
