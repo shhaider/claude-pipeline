@@ -38,12 +38,16 @@ The pipeline only gains complexity when an A/B test shows the new version matche
 ## Pipeline phases (MVP)
 
 ```
-gh issue → INTAKE → RESEARCH → PLAN → CODE → VERIFY → PR
-              ↑                            │
-              └───── (verify fail loops back, max 2 retries) ──┘
+gh issue → INTAKE → RESEARCH → SYSTEM_GAP_ANALYST → PLAN → CODE → VERIFY → PR
+              ↑                                                │
+              └────────── (verify fail loops back, max 2 retries) ──┘
 ```
 
 Each phase is a LangGraph node. Each node shells out to `claude --print` with a focused prompt and a slice of pipeline state. State persists to a SQLite checkpoint after every node — pipelines that crash mid-flight can be resumed.
+
+### Adversarial gap pass (`system_gap_analyst`)
+
+Between research and plan, an adversarial pre-lane walks the intake decisions and the research brief through 8 named lenses — infrastructure-assumed-but-not-mentioned, silent-failure, cross-cutting-concerns, next-stage-prerequisites, YAGNI-cut, fake-completion, architecture-smell, and developer-contract-completeness — to surface what is missing, unstated, or silently assumed in the framing. It emits structured `blocking_gaps` and `advisory_gaps`. Blocking gaps are injected into the planner's prompt as **MANDATORY ADDITIONAL DELIVERABLES** the contract must cover; advisory gaps are surfaced as non-binding suggestions. This is the port of metabuilder's `system_gap_analyst` role (see `prompts/metabuilder/35_system_gap_analyst.md` and `docs/metabuilder-port-spec.md`).
 
 ## CLI
 
@@ -70,6 +74,7 @@ src/claude_pipeline/
 ├── nodes/          # one file per phase
 │   ├── intake.py
 │   ├── research.py
+│   ├── system_gap_analyst.py
 │   ├── plan.py
 │   ├── code.py
 │   ├── verify.py
@@ -77,9 +82,9 @@ src/claude_pipeline/
 ├── claude.py       # subprocess wrapper for `claude --print`
 └── cli.py          # entry point
 
-prompts/            # prompt templates per node
-runs/               # per-invocation state + checkpoint DB
-tests/              # pytest suite
+prompts/metabuilder/  # verbatim role prompts ported from metabuilder
+runs/                 # per-invocation state + checkpoint DB
+tests/                # pytest suite
 ```
 
 ## Out of scope (until v0.2+)
