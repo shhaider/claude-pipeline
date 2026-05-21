@@ -1,0 +1,20 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.14.3, pytest-9.0.2, pluggy-1.6.0 -- /opt/homebrew/opt/python@3.14/bin/python3.14
+cachedir: .pytest_cache
+rootdir: /private/tmp/four-way/V3/repo
+configfile: pyproject.toml
+plugins: langsmith-0.8.5, anyio-4.13.0
+collecting ... collected 9 items
+
+tests/test_system_gap_analyst.py::test_canonical_lens_slugs_match_node_constant PASSED [ 11%]
+tests/test_system_gap_analyst.py::test_packet_contains_all_eight_lenses PASSED [ 22%]
+tests/test_system_gap_analyst.py::test_packet_includes_intake_and_research PASSED [ 33%]
+tests/test_system_gap_analyst.py::test_packet_omits_anchor_gracefully_when_missing PASSED [ 44%]
+tests/test_system_gap_analyst.py::test_packet_uses_structured_anchor_when_present PASSED [ 55%]
+tests/test_system_gap_analyst.py::test_plan_injection_marks_blocking_as_mandatory PASSED [ 66%]
+tests/test_system_gap_analyst.py::test_plan_injection_advisory_not_mandatory PASSED [ 77%]
+tests/test_system_gap_analyst.py::test_plan_injection_empty_gap_analysis_renders_empty_string PASSED [ 88%]
+tests/test_system_gap_analyst.py::test_plan_injection_both_blocking_and_advisory PASSED [100%]
+
+============================== 9 passed in 0.01s ===============================
+EXIT_CODE:0

@@ -1,0 +1,9 @@
+gate_source_path: /tmp/four-way/gate/
+gate_version: 5.4
+gate_aggregate_sha256: 4ba2eec3b66f989bb3e728807eaeec630852cb00b8bb03bcbb64e4687bfc580e
+hash_method: 'find . -type f -name "*.md" -o -name "*.yaml" -o -name "*.py" | sort | xargs shasum -a 256 | shasum -a 256'
+captured_at: 2026-05-21T00:00:20Z
+notes: |
+  Aggregate hash of the gate source tree used to run this package validation.
+  Confirms the gate version against which this package was authored matches
+  the Gate 5.4 release referenced by 00_START.md.

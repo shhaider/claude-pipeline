@@ -1,0 +1,14 @@
+# Stale file register — no prior gate cycles ran on this task area.
+
+task_id: "SYSTEM-GAP-ANALYST-001"
+task_area: "system-gap-analyst"
+created_at: "2026-05-21T00:00:00Z"
+last_updated_at: "2026-05-21T00:00:20Z"
+
+stale_files: []
+
+summary:
+  total_stale_files: 0
+  banners_added: 0
+  banners_missing: 0
+  audit_verdict: PASS
