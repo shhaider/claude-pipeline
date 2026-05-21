@@ -114,10 +114,23 @@ def extract_tokens(text: str) -> list[str]:
     return out[:MAX_TOKENS]
 
 
-def _is_test_path(p: Path) -> bool:
-    """Heuristic: anything under tests/, *_test.py, *.test.ts, etc."""
+def _is_test_path(p: Path, root: Path | None = None) -> bool:
+    """Heuristic: anything under tests/, *_test.py, *.test.ts, etc.
+
+    If `root` is given, only inspect path parts RELATIVE to root, so a
+    worktree path under e.g. /tmp/some-test-dir/worktree/src/... isn't
+    mistakenly flagged.
+    """
     name = p.name.lower()
-    parts_lower = {part.lower() for part in p.parts}
+    if root is not None:
+        try:
+            rel = p.resolve().relative_to(root.resolve())
+            parts = rel.parts
+        except ValueError:
+            parts = p.parts
+    else:
+        parts = p.parts
+    parts_lower = {part.lower() for part in parts}
     if "tests" in parts_lower or "test" in parts_lower or "__tests__" in parts_lower:
         return True
     if name.startswith("test_") or name.endswith("_test.py"):
@@ -128,15 +141,25 @@ def _is_test_path(p: Path) -> bool:
 
 
 def _iter_code_files(root: Path) -> list[Path]:
-    """Yield code files under root, skipping noise dirs."""
+    """Yield code files under root, skipping noise dirs.
+
+    Skip-dir matching uses the path RELATIVE to root, so the worktree
+    path containing literally e.g. "runs/" or "node_modules/" as a
+    parent of `root` doesn't false-positive everything.
+    """
     out: list[Path] = []
+    root_resolved = root.resolve()
     for path in root.rglob("*"):
         if not path.is_file():
             continue
         if path.suffix.lower() not in _CODE_EXTS:
             continue
-        # Skip anything under a noise dir
-        if any(part in _SKIP_DIRS for part in path.parts):
+        try:
+            rel = path.resolve().relative_to(root_resolved)
+        except ValueError:
+            continue
+        # Skip anything under a noise dir (relative parts only)
+        if any(part in _SKIP_DIRS for part in rel.parts):
             continue
         # Skip files we'd never read
         try:
@@ -229,7 +252,7 @@ def gather_relevant_excerpts(
         for path in code_files:
             if path in picked_paths:
                 continue
-            if _is_test_path(path):
+            if _is_test_path(path, root):
                 continue
             try:
                 content = path.read_text(encoding="utf-8", errors="replace")

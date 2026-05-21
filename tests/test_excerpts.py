@@ -131,6 +131,23 @@ class TestGatherRelevantExcerpts:
         )
         assert result == ""
 
+    def test_worktree_under_skip_dir_parent_still_works(self, tmp_path: Path):
+        """Regression: when the worktree path itself is *under* a
+        directory whose name matches _SKIP_DIRS (e.g. runs/ in the
+        real pipeline layout), the skip-dir filter must NOT match the
+        parent path. Only parts relative to the worktree root should
+        be skip-filtered.
+        """
+        # Simulate runs/{id}/worktree/ layout
+        worktree = tmp_path / "runs" / "abc123" / "worktree"
+        (worktree / "src").mkdir(parents=True)
+        (worktree / "src" / "module.py").write_text(
+            "def build_pipeline(args):\n    return args\n"
+        )
+        result = gather_relevant_excerpts("update build_pipeline", worktree)
+        assert "module.py" in result
+        assert "def build_pipeline" in result
+
 
 class TestGatherExcerptsForFiles:
     def test_returns_head_of_named_files(self, repo_root: Path):
