@@ -28,7 +28,7 @@ RESEARCH BRIEF:
 {research_brief}
 
 ISSUE #{issue_number}: {issue_title}
-
+{gap_block}
 Produce a JSON array of stages. Each stage is one focused unit of work that an implementer can complete in a single coding session.
 
 Rules:
@@ -54,13 +54,72 @@ Begin:
 """
 
 
-def plan_node(state: PipelineState) -> dict:
-    prompt = PROMPT_TEMPLATE.format(
+def _format_gap(g: dict) -> str:
+    """Render one gap object as a bullet line.
+
+    Tolerant of partial shapes: missing keys render as empty strings
+    rather than raising, so a malformed gap from the analyst can't
+    crash the planner.
+    """
+    lens = str(g.get("lens", "")).strip()
+    gap = str(g.get("gap", "")).strip()
+    rec = str(g.get("recommendation", "")).strip()
+    lens_prefix = f"[{lens}] " if lens else ""
+    rec_suffix = f" — recommendation: {rec}" if rec else ""
+    return f"- {lens_prefix}{gap}{rec_suffix}"
+
+
+def _build_gap_block(gap_analysis: dict | None) -> str:
+    """Render blocking gaps as MANDATORY ADDITIONAL DELIVERABLES and
+    advisory gaps as non-mandatory suggestions. Returns an empty
+    string when gap_analysis is absent or contains no gaps, so the
+    surrounding prompt template renders cleanly.
+    """
+    if not gap_analysis:
+        return ""
+    blocking = list(gap_analysis.get("blocking_gaps") or [])
+    advisory = list(gap_analysis.get("advisory_gaps") or [])
+    if not blocking and not advisory:
+        return ""
+    sections: list[str] = [""]
+    if blocking:
+        sections.append("## MANDATORY ADDITIONAL DELIVERABLES (from adversarial gap analysis)")
+        sections.append(
+            "Each item below MUST be covered by at least one stage. These "
+            "are blocking gaps surfaced by system_gap_analyst — treat them "
+            "as non-negotiable additions to the contract."
+        )
+        sections.extend(_format_gap(g) for g in blocking)
+        sections.append("")
+    if advisory:
+        sections.append("## Advisory gaps (suggestions, not requirements)")
+        sections.append(
+            "The following were flagged as advisory by system_gap_analyst. "
+            "Consider whether any are worth addressing; they are NOT "
+            "mandatory."
+        )
+        sections.extend(_format_gap(g) for g in advisory)
+        sections.append("")
+    return "\n".join(sections)
+
+
+def build_plan_prompt(state: PipelineState) -> str:
+    """Render the full planner user-prompt for the given state.
+
+    Exposed as a pure function so tests can assert on the rendered
+    string without invoking Claude.
+    """
+    return PROMPT_TEMPLATE.format(
         intake_json=json.dumps(state.get("intake", {}), indent=2),
         research_brief=state.get("research_brief", "(no research brief)"),
-        issue_number=state["issue_number"],
+        issue_number=state.get("issue_number", "?"),
         issue_title=state.get("issue_title", ""),
+        gap_block=_build_gap_block(state.get("gap_analysis")),
     )
+
+
+def plan_node(state: PipelineState) -> dict:
+    prompt = build_plan_prompt(state)
     log.info("plan: invoking claude")
     result = run_claude(
         prompt,
