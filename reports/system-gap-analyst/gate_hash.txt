@@ -1,0 +1,3 @@
+8f9f85e1ad1bd05f7121ce9a1f1bfd2c294e7123c4df905699cbdc68852f3829
+Gate dir: /tmp/four-way/gate
+Captured at: 2026-05-21T19:55:00Z

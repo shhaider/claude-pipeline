@@ -1,0 +1,57 @@
+task_id: "system-gap-analyst"
+task_area: "system-gap-analyst"
+created_at: "2026-05-21T19:35:00Z"
+last_updated_at: "2026-05-21T19:55:00Z"
+
+claims:
+  - claim_id: C001
+    statement: "The system_gap_analyst node exists at src/claude_pipeline/nodes/system_gap_analyst.py and exports system_gap_analyst_node(state) -> dict."
+    evidence_artifact_ids: [E002]
+    verified: true
+    verdict: PASS
+  - claim_id: C002
+    statement: "Graph topology wires research -> system_gap_analyst -> plan in both build_graph and render_mermaid."
+    evidence_artifact_ids: [E003, E004]
+    verified: true
+    verdict: PASS
+  - claim_id: C003
+    statement: "plan_node's user packet includes blocking_gaps as MANDATORY ADDITIONAL DELIVERABLES when gap_analysis is in state."
+    evidence_artifact_ids: [E001, E002]
+    verified: true
+    verdict: PASS
+  - claim_id: C004
+    statement: "Advisory gaps appear in plan_node's prompt under ADVISORY SUGGESTIONS and never under MANDATORY ADDITIONAL DELIVERABLES."
+    evidence_artifact_ids: [E001]
+    verified: true
+    verdict: PASS
+  - claim_id: C005
+    statement: "All 8 named adversarial lenses appear verbatim in the user packet the SGA node sends to run_claude."
+    evidence_artifact_ids: [E001]
+    verified: true
+    verdict: PASS
+  - claim_id: C006
+    statement: "pytest -v tests/test_system_gap_analyst.py passes with 4 tests, EXIT_CODE 0."
+    evidence_artifact_ids: [E001]
+    verified: true
+    verdict: PASS
+  - claim_id: C007
+    statement: "PipelineState carries gap_analysis: GapAnalysis (TypedDict) for handoff between the new node and plan_node."
+    evidence_artifact_ids: [E002]
+    verified: true
+    verdict: PASS
+  - claim_id: C008
+    statement: "The SGA role prompt loaded via --append-system-prompt is the verbatim metabuilder port and lives at prompts/metabuilder/35_system_gap_analyst.md."
+    evidence_artifact_ids: [E002]
+    verified: true
+    verdict: PASS
+  - claim_id: C009
+    statement: "The model id claude-opus-4-7 (the most recent Tier-3 Opus) is the only LLM identifier introduced by this change; no fallback or alternative routing is added."
+    evidence_artifact_ids: [E002]
+    verified: true
+    verdict: PASS
+
+summary:
+  total_claims: 9
+  verified: 9
+  failed: 0
+  audit_verdict: PASS
