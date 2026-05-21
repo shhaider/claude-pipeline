@@ -82,16 +82,39 @@ runs/               # per-invocation state + checkpoint DB
 tests/              # pytest suite
 ```
 
-## Out of scope (until v0.2+)
+## Out of scope (until v0.4+)
 
-- Multi-node-per-phase (intake-clarify, intake-scope-broaden, etc.)
-- Parallel prompt expansion
-- Governance review pass
-- Per-stage iteration loops (4-Correction, 2-Revision, repair cycle)
-- Routing between software / writing lanes
-- Per-node tool-use restrictions (Claude Code already handles this)
+- The 4 mandatory reviewer panel (founder_judge, reliability_engineer, state_architecture_reviewer, security_blast_radius_judge) — v0.3 ships pack_reviewer + reasoning_reviewer + governance_reviewer + release_gatekeeper only.
+- Per-stage prompt-expansion review (v0.3 runs the reviewer ladder once at the end on the full diff; metabuilder's exact placement is per-stage).
+- Routing between software / writing lanes.
+- Per-node tool-use restrictions (Claude Code already handles this).
+- Human-in-the-loop on gatekeeper FAIL — v0.3 just logs and exits via `error_exit`.
 
 All of those are upgrade issues that will be filed against this repo and built BY this pipeline.
+
+## v0.3 review ladder
+
+After the code node finishes all stages and the test runner reports pass/fail, the diff goes through:
+
+```
+verify → pack_reviewer → reasoning_reviewer → governance_reviewer
+                                                     │
+                                       PASS ─────────┴──── NEEDS_REVISION/FAIL
+                                                                │
+                                                                ▼
+                                                      governance_repair (≤2 rounds)
+                                                                │
+                                                                ▼
+                                                       governance_reviewer (again)
+                                                                │
+                                                  ────────────  ▼  ────────────
+                                                  │      release_gatekeeper    │
+                                                  └── PASS ──┬── FAIL/BLOCKED ─┘
+                                                             ▼            ▼
+                                                             pr       error_exit
+```
+
+The code session is **shared across stages** via `claude --resume`. The reviewer sessions are **fresh** (the role prompts demand fresh eyes).
 
 ## Constraints
 
