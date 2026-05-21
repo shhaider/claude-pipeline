@@ -1,0 +1,12 @@
+ README.md                                       |  22 ++-
+ prompts/metabuilder/35_system_gap_analyst.md    |  55 ++++++
+ pyproject.toml                                  |   1 +
+ src/claude_pipeline/graph.py                    |  53 +++--
+ src/claude_pipeline/nodes/contract.py           | 207 +++++++++++++++++++
+ src/claude_pipeline/nodes/system_gap_analyst.py | 251 ++++++++++++++++++++++++
+ src/claude_pipeline/state.py                    |  39 ++++
+ tests/__init__.py                               |   0
+ tests/test_system_gap_analyst.py                | 196 ++++++++++++++++++
+ 9 files changed, 789 insertions(+), 35 deletions(-)
+
+EXIT_CODE:0

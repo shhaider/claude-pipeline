@@ -1,0 +1,14 @@
+working tree clean
+
+Captured after cycle-3 commit b347f48. The only artifacts pending at the
+moment this file was written are this file itself plus the post-commit
+regenerated package_file_sizes.txt / package_file_hashes.txt /
+FINAL_PACKET_AUDITOR_REPORT.md (the independent-auditor re-audit). All
+four are included in the follow-up commit. After that follow-up commit
+the worktree is empty:
+
+  $ git status --porcelain
+  (no output)
+
+Per check_gate_package.py:check_final_git_status (line 1158), the
+"working tree clean" marker is an accepted signal of a clean tree.

@@ -1,0 +1,37 @@
+evidence:
+  - id: E1
+    artifact_type: raw_test_output
+    path: reports/system_gap_analyst/raw/pytest.txt
+    command: "python3 -m pytest -v"
+    exit_code: 0
+    captured_at: "2026-05-21"
+    description: "Full pytest -v output, 9 tests, all PASSED. EXIT_CODE:0 trailer line."
+  - id: E2
+    artifact_type: raw_render_output
+    path: reports/system_gap_analyst/raw/mermaid.txt
+    command: "python3 -c 'from claude_pipeline.graph import render_mermaid; print(render_mermaid())'"
+    exit_code: 0
+    captured_at: "2026-05-21"
+    description: "Mermaid render — shows research --> system_gap_analyst --> contract --> plan."
+  - id: E3
+    artifact_type: source_file
+    path: prompts/metabuilder/35_system_gap_analyst.md
+    description: "Role system prompt; 8 lenses spelled out verbatim."
+  - id: E4
+    artifact_type: source_file
+    path: src/claude_pipeline/state.py
+    description: "Adds GapFinding/GapAnalysis/ContractDeliverable/Contract typed dicts + gap_analysis + contract fields on PipelineState."
+  - id: E5
+    artifact_type: raw_cli_help
+    path: reports/system_gap_analyst/raw/claude_help.txt
+    command: "claude --help | grep -E -- '--max|--temperature|--append'"
+    exit_code: 0
+    captured_at: "2026-05-21"
+    description: "Confirms claude CLI exposes neither --max-tokens nor --temperature; only --max-budget-usd and --append-system-prompt[-file]."
+  - id: E6
+    artifact_type: source_diff
+    path: reports/system_gap_analyst/raw/diff.txt
+    command: "git diff main...V2-rerun-1779380607 --stat"
+    exit_code: 0
+    captured_at: "2026-05-21"
+    description: "Scope of branch diff for export channel audit."

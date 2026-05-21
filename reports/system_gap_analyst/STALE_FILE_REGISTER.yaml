@@ -1,0 +1,12 @@
+stale_files: []
+notes: |
+  No stale files identified.
+  - No files moved or renamed in this change.
+  - No deprecated symbols left behind.
+  - cli.py still imports build_graph from graph.py — graph.py exports it
+    with the new topology; no stub left.
+  - The "plan" node still receives state with the new gap_analysis/contract
+    keys present but does not yet consume them — this is intentional
+    (consumption is the next-issue's scope, per the issue body's out-of-scope
+    notes). plan_node degrades cleanly by falling back to research-only
+    framing when contract is absent.

@@ -1,0 +1,9 @@
+# claude --help filtered for max/temperature/append flags
+# Captured 2026-05-21
+# Command: claude --help | grep -E -- '--max|--temperature|--append'
+
+  --append-system-prompt <prompt>                   Append a system prompt to the default system prompt
+  --bare                                            Minimal mode: skip hooks, LSP, plugin sync, attribution, auto-memory, background prefetches, keychain reads, and CLAUDE.md auto-discovery. Sets CLAUDE_CODE_SIMPLE=1. Anthropic auth is strictly ANTHROPIC_API_KEY or apiKeyHelper via --settings (OAuth and keychain are never read). 3P providers (Bedrock/Vertex/Foundry) use their own credentials. Skills still resolve via /skill-name. Explicitly provide context via: --system-prompt[-file], --append-system-prompt[-file], --add-dir (CLAUDE.md dirs), --mcp-config, --settings, --agents, --plugin-dir.
+  --max-budget-usd <amount>                         Maximum dollar amount to spend on API calls (only works with --print)
+
+EXIT_CODE:0
