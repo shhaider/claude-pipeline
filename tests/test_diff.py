@@ -78,3 +78,22 @@ class TestCaptureDiff:
         diff = capture_diff(tiny_repo, base_branch="main")
         assert len(diff) <= MAX_DIFF_CHARS + 200  # some marker text added
         assert "truncated" in diff
+
+    def test_untracked_files_inlined(self, tiny_repo: Path):
+        # Create an untracked file (e.g. tests/__init__.py the way the
+        # code node creates files without committing).
+        new_dir = tiny_repo / "new_pkg"
+        new_dir.mkdir()
+        (new_dir / "__init__.py").write_text("# marker\n")
+        (new_dir / "module.py").write_text("def fn():\n    return 42\n")
+        diff = capture_diff(tiny_repo, base_branch="main")
+        assert "new_pkg/__init__.py" in diff
+        assert "new_pkg/module.py" in diff
+        assert "/dev/null" in diff  # new-file marker
+        assert "# marker" in diff
+
+    def test_untracked_top_level_file(self, tiny_repo: Path):
+        (tiny_repo / "loose.py").write_text("x = 1\n")
+        diff = capture_diff(tiny_repo, base_branch="main")
+        assert "loose.py" in diff
+        assert "+x = 1" in diff
